@@ -40,6 +40,8 @@ class AppStrings {
   static const String save = 'సేవ్ · Save';
   static const String cancel = 'రద్దు · Cancel';
   static const String editItem = 'సరుకు వివరాలు మార్చండి · Edit Item';
+  static const String addItem = 'కొత్త సరుకు జోడించండి · Add Item';
+  static const String openingStock = 'ప్రారంభ నిల్వ · Opening Stock';
 
   // Demo Data & Settings
   static const String generateDemoData = 'Generate 30 Days Demo Data (30 రోజుల డెమో డేటా)';

@@ -74,6 +74,12 @@ class KiranaProvider extends ChangeNotifier {
     return id;
   }
 
+  Future<int> addItem(Item item) async {
+    final id = await _db.insertItem(item);
+    await loadData();
+    return id;
+  }
+
   Future<void> updateItem(Item item) async {
     await _db.updateItem(item);
     await loadData();

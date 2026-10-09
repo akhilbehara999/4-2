@@ -85,8 +85,36 @@ class _ConfirmScreenState extends State<ConfirmScreen> {
     _selectedItemId = widget.parsedEntry.itemId;
 
     _customerController.addListener(() => setState(() {}));
-    _qtyController.addListener(() => setState(() {}));
+    _qtyController.addListener(() {
+      setState(() {});
+      if (!_userManuallyEditedAmount) {
+        _tryAutoFillAmount();
+      }
+    });
     _amountController.addListener(() => setState(() {}));
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_amountController.text.trim().isEmpty) {
+        _tryAutoFillAmount();
+      }
+    });
+  }
+
+  bool _userManuallyEditedAmount = false;
+
+  void _tryAutoFillAmount() {
+    if (_userManuallyEditedAmount) return;
+    if (_selectedItemId == null) return;
+    if (_selectedType != 'cash_sale' && _selectedType != 'credit_sale') return;
+    final items = context.read<KiranaProvider>().items;
+    final item = items.where((i) => i.id == _selectedItemId).firstOrNull;
+    if (item != null && item.sellPrice > 0) {
+      final qty = double.tryParse(_qtyController.text.trim()) ?? 0.0;
+      if (qty > 0) {
+        final calc = qty * item.sellPrice;
+        _amountController.text = _formatAmount(calc);
+      }
+    }
   }
 
   @override
@@ -400,6 +428,7 @@ class _ConfirmScreenState extends State<ConfirmScreen> {
                   onChanged: (val) {
                     setState(() {
                       _selectedItemId = val;
+                      _tryAutoFillAmount();
                     });
                   },
                 ),
@@ -475,6 +504,9 @@ class _ConfirmScreenState extends State<ConfirmScreen> {
                 const SizedBox(height: 6),
                 TextFormField(
                   controller: _amountController,
+                  onChanged: (val) {
+                    _userManuallyEditedAmount = true;
+                  },
                   keyboardType: const TextInputType.numberWithOptions(decimal: true),
                   style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   decoration: InputDecoration(

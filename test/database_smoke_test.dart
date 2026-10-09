@@ -71,6 +71,11 @@ void main() {
 
     final id = await localDb.insertItem(item);
     expect(id, 1);
+    // Inserting item with opening stock writes a stock_log row with reason: 'opening_stock'
+    expect(stockLogs.isNotEmpty, isTrue);
+    expect(stockLogs.first['item_id'], 1);
+    expect(stockLogs.first['change'], 15.5);
+    expect(stockLogs.first['reason'], 'opening_stock');
 
     final retrieved = await localDb.getItem(1);
     expect(retrieved, isNotNull);
@@ -95,7 +100,7 @@ void main() {
       sellPrice: retrieved.sellPrice,
     );
     await localDb.updateItem(editedItem);
-    expect(stockLogs.isNotEmpty, isTrue);
+    expect(stockLogs.length, 2);
     expect(stockLogs.last['item_id'], 1);
     expect(stockLogs.last['change'], 4.5);
     expect(stockLogs.last['reason'], 'recount');

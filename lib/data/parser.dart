@@ -101,6 +101,117 @@ const Map<String, List<String>> UNIT_SYNONYMS = {
   'ml': ['ml', 'milli', 'millilitre', 'millilitres', 'మిల్లీ', 'మిల్లీలీటర్లు', 'మిల్లీలీటర్ల'],
 };
 
+/// Telugu and Romanized Telugu words for numbers and fractions.
+const Map<String, double> TELUGU_NUMBER_WORDS = {
+  // Compound fractions & special terms (sorted longest first)
+  'ఒకటిన్నర': 1.5,
+  'ఒకన్నర': 1.5,
+  'ఒకటిన్నరకి': 1.5,
+  'okatinnara': 1.5,
+  'okannara': 1.5,
+  'రెండిన్నర': 2.5,
+  'రెండున్నర': 2.5,
+  'rendinnara': 2.5,
+  'rendunnara': 2.5,
+  'మూడిన్నర': 3.5,
+  'మూడున్నర': 3.5,
+  'moodinnara': 3.5,
+  'moodunnara': 3.5,
+  'నాలుగిన్నర': 4.5,
+  'నాలుగున్నర': 4.5,
+  'naaluginnara': 4.5,
+  'naalugunnara': 4.5,
+  'ఐదిన్నర': 5.5,
+  'ఐదున్నర': 5.5,
+  'aidinnara': 5.5,
+  'aidunnara': 5.5,
+  'ముప్పావు': 0.75,
+  'muppaavu': 0.75,
+  'muppavu': 0.75,
+  'అర': 0.5,
+  'ara': 0.5,
+  'పావు': 0.25,
+  'paavu': 0.25,
+  'pavu': 0.25,
+
+  // Whole numbers
+  'ఒకటి': 1.0,
+  'ఒక': 1.0,
+  'okati': 1.0,
+  'oka': 1.0,
+  'రెండు': 2.0,
+  'rendu': 2.0,
+  'మూడు': 3.0,
+  'moodu': 3.0,
+  'mudu': 3.0,
+  'నాలుగు': 4.0,
+  'naalugu': 4.0,
+  'nalugu': 4.0,
+  'ఐదు': 5.0,
+  'aidu': 5.0,
+  'aayidu': 5.0,
+  'ఆరు': 6.0,
+  'aaru': 6.0,
+  'ఏడు': 7.0,
+  'yedu': 7.0,
+  'edu': 7.0,
+  'ఎనిమిది': 8.0,
+  'enimidi': 8.0,
+  'తొమ్మిది': 9.0,
+  'tommidi': 9.0,
+  'పది': 10.0,
+  'padi': 10.0,
+  'పదకొండు': 11.0,
+  'padakondu': 11.0,
+  'పన్నెండు': 12.0,
+  'pannendu': 12.0,
+  'పదమూడు': 13.0,
+  'padamoodu': 13.0,
+  'పద్నాలుగు': 14.0,
+  'padnaalugu': 14.0,
+  'పదిహేను': 15.0,
+  'padihenu': 15.0,
+  'ఇరవై': 20.0,
+  'iravai': 20.0,
+  'ఇరవై ఐదు': 25.0,
+  'ముప్పై': 30.0,
+  'muppai': 30.0,
+  'నలభై': 40.0,
+  'nalabhai': 40.0,
+  'యాభై': 50.0,
+  'yabhai': 50.0,
+  'yaabhai': 50.0,
+  'వంద': 100.0,
+  'vanda': 100.0,
+};
+
+/// Telugu words for monetary amounts.
+const Map<String, double> TELUGU_AMOUNT_WORDS = {
+  'వెయ్యి': 1000.0,
+  'veyyi': 1000.0,
+  'వేయి': 1000.0,
+  'ఐదు వందలు': 500.0,
+  'aidu vandalu': 500.0,
+  'నాలుగు వందలు': 400.0,
+  'మూడు వందలు': 300.0,
+  'రెండు వందలు': 200.0,
+  'rendu vandalu': 200.0,
+  'వంద': 100.0,
+  'vanda': 100.0,
+  'యాభై': 50.0,
+  'yabhai': 50.0,
+  'నలభై': 40.0,
+  'nalabhai': 40.0,
+  'ముప్పై': 30.0,
+  'muppai': 30.0,
+  'ఇరవై': 20.0,
+  'iravai': 20.0,
+  'పది': 10.0,
+  'padi': 10.0,
+  'ఐదు': 5.0,
+  'aidu': 5.0,
+};
+
 /// Checks if [word] occurs as a distinct whole word in [text].
 /// Word characters include Latin alphanumeric ([a-zA-Z0-9]) and Telugu script (\u0C00-\u0C7F).
 /// Word boundaries are defined by start/end of string or non-word characters.
@@ -345,6 +456,58 @@ ParsedEntry parse(
     }
   }
 
+  // Check Telugu number words before unit (e.g. "ఒక లీటరు", "రెండు కిలోలు", "అర కిలో", "పావు కిలో")
+  if (qty == null) {
+    final numWordsList = TELUGU_NUMBER_WORDS.keys.toList()
+      ..sort((a, b) => b.length.compareTo(a.length));
+    final numWordPattern = numWordsList.map(RegExp.escape).join('|');
+
+    final wordQtyRegex = RegExp(
+      '(?:^|[^a-zA-Z0-9\\u0C00-\\u0C7F])($numWordPattern)\\s*($unitPattern)(?:[^a-zA-Z\\u0C00-\\u0C7F]|\$)',
+      caseSensitive: false,
+    );
+    final wordQtyMatch = wordQtyRegex.firstMatch(cleanText);
+    if (wordQtyMatch != null) {
+      final matchedWord = wordQtyMatch.group(1)!.toLowerCase();
+      qty = TELUGU_NUMBER_WORDS[matchedWord];
+      final matchedUnitStr = wordQtyMatch.group(2)!.toLowerCase();
+      for (final entry in UNIT_SYNONYMS.entries) {
+        if (entry.value.any((u) => u.toLowerCase() == matchedUnitStr)) {
+          unit = entry.key;
+          break;
+        }
+      }
+    }
+  }
+
+  // Fallback for standalone fractions or number words
+  if (qty == null) {
+    final fractions = {
+      'ఒకటిన్నర': 1.5,
+      'రెండున్నర': 2.5,
+      'మూడున్నర': 3.5,
+      'ముప్పావు': 0.75,
+      'muppaavu': 0.75,
+      'అర': 0.5,
+      'ara': 0.5,
+      'పావు': 0.25,
+      'paavu': 0.25,
+      'pavu': 0.25,
+    };
+    for (final f in fractions.entries) {
+      if (containsWord(cleanText, f.key)) {
+        qty = f.value;
+        for (final entry in UNIT_SYNONYMS.entries) {
+          if (entry.value.any((u) => containsWord(cleanText, u))) {
+            unit = entry.key;
+            break;
+          }
+        }
+        break;
+      }
+    }
+  }
+
   // Convert grams to kg and ml to litres
   if (unit == 'gram') {
     if (qty != null) {
@@ -378,6 +541,21 @@ ParsedEntry parse(
     final prefixMatch = prefixAmountRegex.firstMatch(cleanText);
     if (prefixMatch != null) {
       amount = double.tryParse(prefixMatch.group(1)!);
+    }
+  }
+
+  // Check Telugu amount words before rupee terms
+  if (amount == null) {
+    final amountWordsList = TELUGU_AMOUNT_WORDS.keys.toList()
+      ..sort((a, b) => b.length.compareTo(a.length));
+    final amountWordPattern = amountWordsList.map(RegExp.escape).join('|');
+    final wordAmountRegex = RegExp(
+      '(?:^|[^a-zA-Z0-9\\u0C00-\\u0C7F])($amountWordPattern)\\s*(?:rupayalu|roopayalu|rupai|రూపాయలు|రూపాయి|రూ|rs|₹)(?:[^a-zA-Z\\u0C00-\\u0C7F]|\$)',
+      caseSensitive: false,
+    );
+    final wordAmountMatch = wordAmountRegex.firstMatch(cleanText);
+    if (wordAmountMatch != null) {
+      amount = TELUGU_AMOUNT_WORDS[wordAmountMatch.group(1)!.toLowerCase()];
     }
   }
 
@@ -440,7 +618,25 @@ ParsedEntry parse(
     }
   }
 
-  // 5. Resolve Type (match whole words only so "pappu" doesn't trigger "appu")
+  // 5. Amount Auto-fill (Quantity * Sell Price if amount was not spoken)
+  if (amount == null && qty != null) {
+    Item? matchedItem;
+    if (itemId != null) {
+      matchedItem = items.where((it) => it.id == itemId).firstOrNull;
+    }
+    if (matchedItem == null && itemName != null) {
+      final targetName = itemName.toLowerCase();
+      matchedItem = items.where((it) =>
+        (it.nameEn != null && it.nameEn!.toLowerCase() == targetName) ||
+        it.nameTe.toLowerCase() == targetName
+      ).firstOrNull;
+    }
+    if (matchedItem != null && matchedItem.sellPrice > 0) {
+      amount = qty * matchedItem.sellPrice;
+    }
+  }
+
+  // 6. Resolve Type (match whole words only so "pappu" doesn't trigger "appu")
   String? type;
   bool matchesTypeKeyword(String typeKey) {
     final keywords = TYPE_KEYWORDS[typeKey] ?? [];

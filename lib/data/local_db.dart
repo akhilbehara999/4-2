@@ -239,7 +239,16 @@ class LocalDb {
 
   Future<int> insertItem(Item item) async {
     final db = await database;
-    return await db.insert('item', item.toMap());
+    final id = await db.insert('item', item.toMap());
+    if (item.currentStock > 0) {
+      await db.insert('stock_log', {
+        'item_id': id,
+        'change': item.currentStock,
+        'reason': 'opening_stock',
+        'created_at': DateTime.now().toIso8601String(),
+      });
+    }
+    return id;
   }
 
   Future<int> updateItem(Item item) async {

@@ -36,6 +36,174 @@ class StockScreen extends StatelessWidget {
     return AppStrings.noRecentSales;
   }
 
+  void _showAddItemDialog(BuildContext context) {
+    final nameTeController = TextEditingController();
+    final nameEnController = TextEditingController();
+    String selectedUnit = 'kg';
+    final currentStockController = TextEditingController(text: '0');
+    final alertDaysController = TextEditingController(text: '3');
+    final costPriceController = TextEditingController(text: '0');
+    final sellPriceController = TextEditingController(text: '0');
+
+    final units = [
+      {'val': 'kg', 'label': 'kg (కిలో)'},
+      {'val': 'litre', 'label': 'litre (లీటరు)'},
+      {'val': 'packet', 'label': 'packet (ప్యాకెట్)'},
+      {'val': 'piece', 'label': 'piece (పీస్/ముక్క)'},
+      {'val': 'gram', 'label': 'gram (గ్రాము)'},
+      {'val': 'ml', 'label': 'ml (మిల్లీ)'},
+    ];
+
+    showDialog(
+      context: context,
+      builder: (dialogCtx) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              title: const Text(
+                AppStrings.addItem,
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextField(
+                      controller: nameTeController,
+                      decoration: const InputDecoration(
+                        labelText: 'Telugu Name * (తెలుగు పేరు)',
+                        hintText: 'e.g. బియ్యం, పంచదార',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: nameEnController,
+                      decoration: const InputDecoration(
+                        labelText: 'English Name (ఇంగ్లీష్ పేరు)',
+                        hintText: 'e.g. Rice, Sugar',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    DropdownButtonFormField<String>(
+                      initialValue: selectedUnit,
+                      decoration: const InputDecoration(
+                        labelText: 'Unit (కొలత ప్రమాణం)',
+                        border: OutlineInputBorder(),
+                      ),
+                      items: units
+                          .map((u) => DropdownMenuItem(
+                                value: u['val'],
+                                child: Text(u['label']!),
+                              ))
+                          .toList(),
+                      onChanged: (val) {
+                        if (val != null) {
+                          setDialogState(() {
+                            selectedUnit = val;
+                          });
+                        }
+                      },
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: currentStockController,
+                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                      decoration: InputDecoration(
+                        labelText: 'Opening Stock ($selectedUnit) (ప్రారంభ నిల్వ)',
+                        hintText: 'e.g. 50',
+                        border: const OutlineInputBorder(),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: alertDaysController,
+                      keyboardType: TextInputType.number,
+                      decoration: const InputDecoration(
+                        labelText: 'Alert Days (హెచ్చరిక రోజులు)',
+                        hintText: 'Default 3',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: costPriceController,
+                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                      decoration: const InputDecoration(
+                        labelText: 'Cost Price ₹ (కొనుగోలు ధర)',
+                        prefixText: '₹ ',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: sellPriceController,
+                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                      decoration: const InputDecoration(
+                        labelText: 'Sell Price ₹ (అమ్మకపు ధర)',
+                        prefixText: '₹ ',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(dialogCtx).pop(),
+                  child: const Text(AppStrings.cancel),
+                ),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF0B6E5F),
+                    foregroundColor: Colors.white,
+                  ),
+                  onPressed: () async {
+                    final teName = nameTeController.text.trim();
+                    if (teName.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Please enter Telugu item name (తెలుగు పేరు నమోదు చేయండి)')),
+                      );
+                      return;
+                    }
+                    final enName = nameEnController.text.trim();
+                    final stock = double.tryParse(currentStockController.text.trim()) ?? 0.0;
+                    final alert = int.tryParse(alertDaysController.text.trim()) ?? 3;
+                    final cost = double.tryParse(costPriceController.text.trim()) ?? 0.0;
+                    final sell = double.tryParse(sellPriceController.text.trim()) ?? 0.0;
+
+                    final newItem = Item(
+                      nameTe: teName,
+                      nameEn: enName.isNotEmpty ? enName : null,
+                      unit: selectedUnit,
+                      currentStock: stock,
+                      alertDays: alert,
+                      costPrice: cost,
+                      sellPrice: sell,
+                    );
+
+                    await context.read<KiranaProvider>().addItem(newItem);
+                    if (context.mounted) {
+                      Navigator.of(dialogCtx).pop();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('$teName జోడించబడింది · Item added successfully'),
+                          backgroundColor: const Color(0xFF0B6E5F),
+                        ),
+                      );
+                    }
+                  },
+                  child: const Text(AppStrings.save),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
   void _showEditItemDialog(BuildContext context, Item item) {
     final alertDaysController = TextEditingController(text: item.alertDays.toString());
     final costPriceController = TextEditingController(text: item.costPrice.toStringAsFixed(0));
@@ -203,11 +371,36 @@ class StockScreen extends StatelessWidget {
                 )
               else if (evaluations.isEmpty)
                 Container(
-                  padding: const EdgeInsets.all(32),
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 48),
                   alignment: Alignment.center,
-                  child: const Text(
-                    AppStrings.noDataYet,
-                    style: TextStyle(fontSize: 16, color: Colors.grey),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.inventory_2_outlined, size: 64, color: Colors.grey.shade400),
+                      const SizedBox(height: 16),
+                      Text(
+                        'సరుకులు లేవు · No Items Yet',
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.grey.shade800),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'మీ దుకాణంలోని సరుకులు మరియు ప్రారంభ నిల్వ (opening stock) జోడించండి.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
+                      ),
+                      const SizedBox(height: 20),
+                      ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF0B6E5F),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        ),
+                        icon: const Icon(Icons.add),
+                        label: const Text('Add First Item · సరుకు జోడించండి'),
+                        onPressed: () => _showAddItemDialog(context),
+                      ),
+                    ],
                   ),
                 )
               else
@@ -307,6 +500,13 @@ class StockScreen extends StatelessWidget {
             ],
           ),
         ),
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        backgroundColor: const Color(0xFF0B6E5F),
+        foregroundColor: Colors.white,
+        icon: const Icon(Icons.add),
+        label: const Text('Add Item · కొత్త సరుకు'),
+        onPressed: () => _showAddItemDialog(context),
       ),
     );
   }

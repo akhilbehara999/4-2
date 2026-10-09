@@ -262,5 +262,124 @@ void main() {
       expect(res.customerName, 'Ramesh (రామేష్)');
       expect(res.itemName, 'Rice');
     });
+
+    test('20. Telugu number word: ఒక లీటరు (1.0 litre)', () {
+      final itemsWithPrices = [
+        Item(id: 3, nameTe: 'నూనె', nameEn: 'Oil', unit: 'litre', sellPrice: 140),
+      ];
+      final res = parse(
+        'ఒక లీటరు నూనె',
+        itemsWithPrices,
+        sampleCustomers,
+      );
+      expect(res.qty, 1.0);
+      expect(res.unit, 'litre');
+      expect(res.itemName, 'Oil');
+      // Auto-fills amount = 1.0 * 140 = 140.0
+      expect(res.amount, 140.0);
+      expect(res.type, 'cash_sale');
+    });
+
+    test('21. Telugu number word: రెండు కిలోలు (2.0 kg)', () {
+      final itemsWithPrices = [
+        Item(id: 1, nameTe: 'బియ్యం', nameEn: 'Rice', unit: 'kg', sellPrice: 50),
+      ];
+      final res = parse(
+        'రెండు కిలోలు బియ్యం',
+        itemsWithPrices,
+        sampleCustomers,
+      );
+      expect(res.qty, 2.0);
+      expect(res.unit, 'kg');
+      expect(res.itemName, 'Rice');
+      // Auto-fills amount = 2.0 * 50 = 100.0
+      expect(res.amount, 100.0);
+      expect(res.type, 'cash_sale');
+    });
+
+    test('22. Telugu fraction word: అర కిలో (0.5 kg)', () {
+      final itemsWithPrices = [
+        Item(id: 2, nameTe: 'పంచదార', nameEn: 'Sugar', unit: 'kg', sellPrice: 40),
+      ];
+      final res = parse(
+        'అర కిలో పంచదార',
+        itemsWithPrices,
+        sampleCustomers,
+      );
+      expect(res.qty, 0.5);
+      expect(res.unit, 'kg');
+      expect(res.itemName, 'Sugar');
+      // Auto-fills amount = 0.5 * 40 = 20.0
+      expect(res.amount, 20.0);
+    });
+
+    test('23. Telugu fraction word: పావు కిలో (0.25 kg)', () {
+      final itemsWithPrices = [
+        Item(id: 2, nameTe: 'పంచదార', nameEn: 'Sugar', unit: 'kg', sellPrice: 44),
+      ];
+      final res = parse(
+        'పావు కిలో పంచదార',
+        itemsWithPrices,
+        sampleCustomers,
+      );
+      expect(res.qty, 0.25);
+      expect(res.unit, 'kg');
+      expect(res.itemName, 'Sugar');
+      // Auto-fills amount = 0.25 * 44 = 11.0
+      expect(res.amount, 11.0);
+    });
+
+    test('24. Telugu compound fraction: ఒకటిన్నర కిలో (1.5 kg)', () {
+      final res = parse(
+        'ఒకటిన్నర కిలో బియ్యం 75 రూపాయలు',
+        sampleItems,
+        sampleCustomers,
+      );
+      expect(res.qty, 1.5);
+      expect(res.unit, 'kg');
+      expect(res.amount, 75.0);
+    });
+
+    test('25. Amount auto-fill does not overwrite explicitly spoken amount', () {
+      final itemsWithPrices = [
+        Item(id: 1, nameTe: 'బియ్యం', nameEn: 'Rice', unit: 'kg', sellPrice: 50),
+      ];
+      final res = parse(
+        '2 కిలోల బియ్యం 90 రూపాయలు',
+        itemsWithPrices,
+        sampleCustomers,
+      );
+      expect(res.qty, 2.0);
+      expect(res.itemName, 'Rice');
+      expect(res.amount, 90.0); // Not 100.0, respects explicitly spoken 90
+    });
+
+    test('26. Credit sale with Telugu number words and auto-fill amount', () {
+      final itemsWithPrices = [
+        Item(id: 3, nameTe: 'నూనె', nameEn: 'Oil', unit: 'litre', sellPrice: 150),
+      ];
+      final res = parse(
+        'రామేష్ కి ఒక లీటరు నూనె అప్పు',
+        itemsWithPrices,
+        sampleCustomers,
+      );
+      expect(res.type, 'credit_sale');
+      expect(res.customerName, 'రామేష్');
+      expect(res.itemName, 'Oil');
+      expect(res.qty, 1.0);
+      expect(res.unit, 'litre');
+      expect(res.amount, 150.0);
+    });
+
+    test('27. Telugu amount words: వంద రూపాయలు (100 rs)', () {
+      final res = parse(
+        'సురేష్ వంద రూపాయలు ఇచ్చాడు',
+        sampleItems,
+        sampleCustomers,
+      );
+      expect(res.type, 'payment_received');
+      expect(res.customerName, 'సురేష్');
+      expect(res.amount, 100.0);
+    });
   });
 }
