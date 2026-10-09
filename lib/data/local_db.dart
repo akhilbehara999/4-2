@@ -359,6 +359,140 @@ class LocalDb {
     });
   }
 
+  Future<bool> updateTransaction({
+    required int txnId,
+    required String type,
+    String? customerName,
+    int? itemId,
+    double? qty,
+    double? amount,
+  }) async {
+    final db = await database;
+    return await db.transaction<bool>((txn) async {
+      final rows = await txn.query('txn', where: 'id = ?', whereArgs: [txnId], limit: 1);
+      if (rows.isEmpty) return false;
+      final oldRow = rows.first;
+      final oldType = oldRow['type'] as String;
+      final oldItemId = oldRow['item_id'] as int?;
+      final oldCustomerId = oldRow['customer_id'] as int?;
+      final oldQty = (oldRow['qty'] as num?)?.toDouble();
+      final oldAmount = (oldRow['amount'] as num?)?.toDouble() ?? 0.0;
+
+      // 1. Reverse old stock changes
+      if (oldItemId != null && oldQty != null && oldQty > 0) {
+        final itemRows = await txn.query('item', where: 'id = ?', whereArgs: [oldItemId], limit: 1);
+        if (itemRows.isNotEmpty) {
+          final cur = (itemRows.first['current_stock'] as num?)?.toDouble() ?? 0.0;
+          double revertStock = 0.0;
+          if (oldType == 'cash_sale' || oldType == 'credit_sale') {
+            revertStock = oldQty;
+          } else if (oldType == 'restock') {
+            revertStock = -oldQty;
+          }
+          if (revertStock != 0.0) {
+            await txn.update('item', {'current_stock': cur + revertStock}, where: 'id = ?', whereArgs: [oldItemId]);
+          }
+        }
+      }
+
+      // 2. Reverse old customer balance
+      if (oldCustomerId != null) {
+        final custRows = await txn.query('customer', where: 'id = ?', whereArgs: [oldCustomerId], limit: 1);
+        if (custRows.isNotEmpty) {
+          final bal = (custRows.first['balance_due'] as num?)?.toDouble() ?? 0.0;
+          double revBal = bal;
+          if (oldType == 'credit_sale') {
+            revBal = (bal - oldAmount).clamp(0.0, double.infinity);
+          } else if (oldType == 'payment_received') {
+            revBal = bal + oldAmount;
+          }
+          await txn.update('customer', {'balance_due': revBal}, where: 'id = ?', whereArgs: [oldCustomerId]);
+        }
+      }
+
+      // 3. Resolve new customer
+      int? newCustomerId;
+      if (customerName != null && customerName.trim().isNotEmpty) {
+        final cName = customerName.trim();
+        final cRows = await txn.query('customer', where: 'name = ?', whereArgs: [cName], limit: 1);
+        if (cRows.isNotEmpty) {
+          newCustomerId = cRows.first['id'] as int;
+        } else {
+          newCustomerId = await txn.insert('customer', {'name': cName, 'balance_due': 0.0});
+        }
+      }
+
+      // 4. Apply new stock changes
+      if (itemId != null && qty != null && qty > 0) {
+        final itemRows = await txn.query('item', where: 'id = ?', whereArgs: [itemId], limit: 1);
+        if (itemRows.isNotEmpty) {
+          final cur = (itemRows.first['current_stock'] as num?)?.toDouble() ?? 0.0;
+          double change = 0.0;
+          if (type == 'cash_sale' || type == 'credit_sale') {
+            change = -qty;
+          } else if (type == 'restock') {
+            change = qty;
+          }
+          if (change != 0.0) {
+            await txn.update('item', {'current_stock': cur + change}, where: 'id = ?', whereArgs: [itemId]);
+            await txn.insert('stock_log', {
+              'item_id': itemId,
+              'change': change,
+              'reason': 'edit_$type',
+              'created_at': DateTime.now().toIso8601String(),
+            });
+          }
+        }
+      }
+
+      // 5. Apply new customer balance changes
+      if (newCustomerId != null) {
+        final custRows = await txn.query('customer', where: 'id = ?', whereArgs: [newCustomerId], limit: 1);
+        if (custRows.isNotEmpty) {
+          final bal = (custRows.first['balance_due'] as num?)?.toDouble() ?? 0.0;
+          double newBal = bal;
+          if (type == 'credit_sale') {
+            newBal = bal + (amount ?? 0.0);
+          } else if (type == 'payment_received') {
+            newBal = (bal - (amount ?? 0.0)).clamp(0.0, double.infinity);
+          }
+          await txn.update('customer', {'balance_due': newBal}, where: 'id = ?', whereArgs: [newCustomerId]);
+        }
+      }
+
+      // 6. Update txn row
+      await txn.update(
+        'txn',
+        {
+          'type': type,
+          'item_id': itemId,
+          'customer_id': newCustomerId,
+          'qty': qty,
+          'amount': amount ?? 0.0,
+        },
+        where: 'id = ?',
+        whereArgs: [txnId],
+      );
+
+      // 7. Update correction_log
+      await txn.update(
+        'correction_log',
+        {
+          'final_type': type,
+          'final_customer': customerName,
+          'final_item_id': itemId,
+          'final_qty': qty,
+          'final_amount': amount ?? 0.0,
+          'was_edited': 1,
+        },
+        where: 'txn_id = ?',
+        whereArgs: [txnId],
+      );
+
+      return true;
+    });
+  }
+
   Future<List<Txn>> getCustomerTransactions(int customerId) async {
     final db = await database;
     final results = await db.query(

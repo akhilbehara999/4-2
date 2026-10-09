@@ -87,6 +87,28 @@ class KiranaProvider extends ChangeNotifier {
     return ok;
   }
 
+  Future<bool> updateTransaction({
+    required int txnId,
+    required String type,
+    String? customerName,
+    int? itemId,
+    double? qty,
+    double? amount,
+  }) async {
+    final ok = await _db.updateTransaction(
+      txnId: txnId,
+      type: type,
+      customerName: customerName,
+      itemId: itemId,
+      qty: qty,
+      amount: amount,
+    );
+    if (ok) {
+      await loadData();
+    }
+    return ok;
+  }
+
   Future<List<Txn>> getCustomerTransactions(int customerId) async {
     return await _db.getCustomerTransactions(customerId);
   }

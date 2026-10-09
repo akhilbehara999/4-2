@@ -181,7 +181,7 @@ class _ConfirmScreenState extends State<ConfirmScreen> {
       final qty = double.tryParse(_qtyController.text.trim());
       final amount = double.tryParse(_amountController.text.trim());
 
-      await provider.saveEntry(
+      final newTxnId = await provider.saveEntry(
         type: _selectedType,
         customerName: customer.isNotEmpty ? customer : null,
         itemId: _selectedItemId,
@@ -193,16 +193,7 @@ class _ConfirmScreenState extends State<ConfirmScreen> {
       );
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              'Entry saved successfully! (విజయవంతంగా నమోదైంది)',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            backgroundColor: Color(0xFF0B6E5F),
-          ),
-        );
-        Navigator.of(context).pop(true);
+        Navigator.of(context).pop(newTxnId);
       }
     } catch (e) {
       if (mounted) {
@@ -561,7 +552,7 @@ class _ConfirmScreenState extends State<ConfirmScreen> {
                         minimumSize: const Size(0, 56),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       ),
-                      onPressed: () => Navigator.of(context).pop(false),
+                      onPressed: () => Navigator.of(context).pop(),
                       child: const Text('Cancel', style: TextStyle(fontSize: 18)),
                     ),
                   ),

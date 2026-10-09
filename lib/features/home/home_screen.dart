@@ -128,13 +128,13 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  void _processText(String text, {String? audioPath}) {
+  void _processText(String text, {String? audioPath}) async {
     if (text.trim().isEmpty) return;
 
     final provider = context.read<KiranaProvider>();
     final parsed = parse(text, provider.items, provider.customers);
 
-    Navigator.of(context).push(
+    final savedTxnId = await Navigator.of(context).push<dynamic>(
       MaterialPageRoute(
         builder: (_) => ConfirmScreen(
           parsedEntry: parsed,
@@ -142,6 +142,34 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
     );
+
+    if (savedTxnId is int && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text(
+            'Entry saved! · ఎంట్రీ నమోదైంది',
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+          ),
+          backgroundColor: const Color(0xFF0B6E5F),
+          action: SnackBarAction(
+            label: 'UNDO · రద్దు',
+            textColor: Colors.amberAccent,
+            onPressed: () async {
+              await provider.deleteTransaction(savedTxnId);
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Entry undone and reversed! · ఎంట్రీ రద్దు చేయబడింది!'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
+            },
+          ),
+          duration: const Duration(seconds: 6),
+        ),
+      );
+    }
   }
 
   void _showRecountEditDialog(BuildContext context, Item item) {
@@ -597,6 +625,7 @@ class _RecentTxnTile extends StatelessWidget {
 
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+      onTap: () => _showTxnOptions(context, txn),
       title: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -639,11 +668,281 @@ class _RecentTxnTile extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           IconButton(
+            icon: Icon(Icons.edit_outlined, color: Colors.grey.shade600, size: 20),
+            tooltip: 'Edit / Fix Entry (సరిదిద్దు)',
+            onPressed: () => _showEditTxnDialog(context, txn),
+          ),
+          IconButton(
             icon: Icon(Icons.delete_outline, color: Colors.red.shade400, size: 22),
             tooltip: 'Undo / Delete Entry (ఎంట్రీ రద్దు చేయి)',
             onPressed: () => _confirmDeleteTxn(context, txn),
           ),
         ],
+      ),
+    );
+  }
+
+  void _showTxnOptions(BuildContext context, Txn txn) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (bottomSheetCtx) {
+        final provider = context.read<KiranaProvider>();
+        final item = provider.items.where((i) => i.id == txn.itemId).firstOrNull;
+        final customer = provider.customers.where((c) => c.id == txn.customerId).firstOrNull;
+
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  margin: const EdgeInsets.only(bottom: 12),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade400,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    _formatType(txn.type),
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: _typeColor(txn.type),
+                    ),
+                  ),
+                  Text(
+                    '₹${txn.amount.toStringAsFixed(0)}',
+                    style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                  ),
+                ],
+              ),
+              if (item != null) ...[
+                const SizedBox(height: 6),
+                Text('Item: ${item.nameEn ?? item.nameTe} (${txn.qty ?? 0} ${item.unit})',
+                    style: const TextStyle(fontSize: 15)),
+              ],
+              if (customer != null) ...[
+                const SizedBox(height: 4),
+                Text('Customer: ${customer.name}', style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500)),
+              ],
+              if (txn.rawText != null && txn.rawText!.isNotEmpty) ...[
+                const SizedBox(height: 4),
+                Text('Spoken: "${txn.rawText}"',
+                    style: TextStyle(fontSize: 13, color: Colors.grey.shade600, fontStyle: FontStyle.italic)),
+              ],
+              const SizedBox(height: 20),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        foregroundColor: Colors.red.shade700,
+                        side: BorderSide(color: Colors.red.shade300),
+                      ),
+                      icon: const Icon(Icons.delete_outline),
+                      label: const Text('Undo / Delete\nరద్దు చేయి', textAlign: TextAlign.center, style: TextStyle(fontSize: 13)),
+                      onPressed: () {
+                        Navigator.of(bottomSheetCtx).pop();
+                        _confirmDeleteTxn(context, txn);
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: FilledButton.icon(
+                      style: FilledButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        backgroundColor: const Color(0xFF0B6E5F),
+                      ),
+                      icon: const Icon(Icons.edit),
+                      label: const Text('Edit / Fix\nసరిదిద్దు', textAlign: TextAlign.center, style: TextStyle(fontSize: 13)),
+                      onPressed: () {
+                        Navigator.of(bottomSheetCtx).pop();
+                        _showEditTxnDialog(context, txn);
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _showEditTxnDialog(BuildContext context, Txn txn) {
+    final provider = context.read<KiranaProvider>();
+    final items = provider.items;
+    final customers = provider.customers;
+    final currentCustomer = customers.where((c) => c.id == txn.customerId).firstOrNull;
+
+    String editType = txn.type;
+    int? editItemId = txn.itemId;
+    final customerCtrl = TextEditingController(text: currentCustomer?.name ?? '');
+    final qtyCtrl = TextEditingController(
+      text: txn.qty != null
+          ? (txn.qty! % 1 == 0 ? txn.qty!.toInt().toString() : txn.qty.toString())
+          : '1',
+    );
+    final amountCtrl = TextEditingController(
+      text: txn.amount % 1 == 0 ? txn.amount.toInt().toString() : txn.amount.toString(),
+    );
+
+    showDialog(
+      context: context,
+      builder: (dialogCtx) => StatefulBuilder(
+        builder: (ctx, setModalState) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: const Text('Edit / Fix Entry · ఎంట్రీ సరిదిద్దండి', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                DropdownButtonFormField<String>(
+                  initialValue: editType,
+                  decoration: const InputDecoration(
+                    labelText: 'Type (రకం)',
+                    border: OutlineInputBorder(),
+                    contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  ),
+                  items: const [
+                    DropdownMenuItem(value: 'cash_sale', child: Text('Cash Sale (నగదు అమ్మకం)')),
+                    DropdownMenuItem(value: 'credit_sale', child: Text('Credit Sale (అప్పు అమ్మకం)')),
+                    DropdownMenuItem(value: 'payment_received', child: Text('Payment Received (జమ)')),
+                    DropdownMenuItem(value: 'restock', child: Text('Restock (సరుకు రాక)')),
+                    DropdownMenuItem(value: 'expense', child: Text('Expense (ఖర్చు)')),
+                  ],
+                  onChanged: (val) {
+                    if (val != null) {
+                      setModalState(() {
+                        editType = val;
+                      });
+                    }
+                  },
+                ),
+                const SizedBox(height: 12),
+                if (editType == 'credit_sale' || editType == 'payment_received') ...[
+                  const Text('Customer (ఖాతాదారుడు):', style: TextStyle(fontWeight: FontWeight.w600)),
+                  const SizedBox(height: 4),
+                  Autocomplete<String>(
+                    initialValue: TextEditingValue(text: customerCtrl.text),
+                    optionsBuilder: (textVal) {
+                      if (textVal.text.isEmpty) return customers.map((c) => c.name);
+                      return customers
+                          .where((c) => c.name.toLowerCase().contains(textVal.text.toLowerCase()))
+                          .map((c) => c.name);
+                    },
+                    onSelected: (val) => customerCtrl.text = val,
+                    fieldViewBuilder: (ctx, tCtrl, fNode, _) {
+                      tCtrl.addListener(() {
+                        if (customerCtrl.text != tCtrl.text) {
+                          customerCtrl.text = tCtrl.text;
+                        }
+                      });
+                      return TextField(
+                        controller: tCtrl,
+                        focusNode: fNode,
+                        decoration: const InputDecoration(
+                          border: OutlineInputBorder(),
+                          contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                        ),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 12),
+                ],
+                if (editType != 'payment_received' && editType != 'expense') ...[
+                  DropdownButtonFormField<int>(
+                    initialValue: editItemId,
+                    decoration: const InputDecoration(
+                      labelText: 'Item (సరుకు)',
+                      border: OutlineInputBorder(),
+                      contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    ),
+                    items: [
+                      const DropdownMenuItem<int>(value: null, child: Text('None / General')),
+                      ...items.map((i) => DropdownMenuItem<int>(
+                            value: i.id,
+                            child: Text('${i.nameEn ?? i.nameTe} (${i.unit})'),
+                          )),
+                    ],
+                    onChanged: (val) => setModalState(() => editItemId = val),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: qtyCtrl,
+                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    decoration: const InputDecoration(
+                      labelText: 'Quantity (పరిమాణం)',
+                      border: OutlineInputBorder(),
+                      contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                ],
+                TextField(
+                  controller: amountCtrl,
+                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  decoration: const InputDecoration(
+                    prefixText: '₹ ',
+                    labelText: 'Amount (మొత్తం)',
+                    border: OutlineInputBorder(),
+                    contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogCtx).pop(),
+              child: const Text(AppStrings.cancel),
+            ),
+            FilledButton(
+              style: FilledButton.styleFrom(backgroundColor: const Color(0xFF0B6E5F)),
+              onPressed: () async {
+                final amt = double.tryParse(amountCtrl.text.trim()) ?? 0.0;
+                final qty = double.tryParse(qtyCtrl.text.trim());
+                final custName = customerCtrl.text.trim();
+
+                Navigator.of(dialogCtx).pop();
+                if (txn.id != null) {
+                  await provider.updateTransaction(
+                    txnId: txn.id!,
+                    type: editType,
+                    customerName: custName.isNotEmpty ? custName : null,
+                    itemId: editItemId,
+                    qty: qty,
+                    amount: amt,
+                  );
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Entry updated successfully · సరిదిద్దబడింది'),
+                        backgroundColor: Color(0xFF0B6E5F),
+                      ),
+                    );
+                  }
+                }
+              },
+              child: const Text('Save Changes · మార్పులు సేవ్ చేయి'),
+            ),
+          ],
+        ),
       ),
     );
   }
