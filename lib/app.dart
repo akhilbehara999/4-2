@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'core/theme.dart';
+import 'data/kirana_provider.dart';
 import 'features/assistant/assistant_screen.dart';
 import 'features/dashboard/dashboard_screen.dart';
 import 'features/home/home_screen.dart';
@@ -12,11 +14,14 @@ class LogApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'LOG',
-      theme: AppTheme.lightTheme,
-      debugShowCheckedModeBanner: false,
-      home: const MainShell(),
+    return ChangeNotifierProvider<KiranaProvider>(
+      create: (_) => KiranaProvider()..loadData(),
+      child: MaterialApp(
+        title: 'LOG',
+        theme: AppTheme.lightTheme,
+        debugShowCheckedModeBanner: false,
+        home: const MainShell(),
+      ),
     );
   }
 }
