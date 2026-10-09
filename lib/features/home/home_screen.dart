@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../core/strings.dart';
 import '../../data/kirana_provider.dart';
 import '../../data/models.dart';
 import '../../data/parser.dart';
@@ -7,7 +8,12 @@ import 'confirm_screen.dart';
 import 'voice_service.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  final VoidCallback? onNavigateToStock;
+
+  const HomeScreen({
+    super.key,
+    this.onNavigateToStock,
+  });
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -104,10 +110,69 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  void _showRecountEditDialog(BuildContext context, Item item) {
+    final qtyController = TextEditingController(
+      text: item.currentStock.truncateToDouble() == item.currentStock
+          ? item.currentStock.toInt().toString()
+          : item.currentStock.toString(),
+    );
+
+    showDialog(
+      context: context,
+      builder: (dialogCtx) => AlertDialog(
+        title: Text(
+          'Actual Stock: ${item.nameEn ?? ''} (${item.nameTe})',
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Enter current physical count in ${item.unit}:'),
+            const SizedBox(height: 10),
+            TextField(
+              controller: qtyController,
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              autofocus: true,
+              decoration: InputDecoration(
+                suffixText: item.unit,
+                border: const OutlineInputBorder(),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogCtx).pop(),
+            child: const Text(AppStrings.cancel),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF0B6E5F),
+              foregroundColor: Colors.white,
+            ),
+            onPressed: () async {
+              final newStock = double.tryParse(qtyController.text.trim());
+              if (newStock != null) {
+                await context.read<KiranaProvider>().editRecount(item.id!, newStock);
+              }
+              if (context.mounted) {
+                Navigator.of(dialogCtx).pop();
+              }
+            },
+            child: const Text(AppStrings.save),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<KiranaProvider>();
     final recentTxns = provider.recentTxns;
+    final redItems = provider.redItems;
+    final recountItems = provider.recountItems;
     final theme = Theme.of(context);
 
     return Scaffold(
@@ -118,7 +183,7 @@ class _HomeScreenState extends State<HomeScreen> {
             children: [
               // Tagline
               Text(
-                'We Listen · Organise · Grow',
+                AppStrings.tagline,
                 textAlign: TextAlign.center,
                 style: theme.textTheme.headlineSmall?.copyWith(
                   fontWeight: FontWeight.bold,
@@ -142,9 +207,152 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 18),
 
-              // Mic button & listening indicator
+              // B. Running Low Alert Card
+              if (redItems.isNotEmpty) ...[
+                Card(
+                  color: Colors.red.shade50,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    side: BorderSide(color: Colors.red.shade300, width: 1.5),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(Icons.warning_amber_rounded, color: Colors.red.shade800, size: 28),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                AppStrings.runningLow,
+                                style: TextStyle(
+                                  fontSize: 17,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.red.shade900,
+                                ),
+                              ),
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                provider.markAlertsSeen();
+                                widget.onNavigateToStock?.call();
+                              },
+                              child: const Text('View Stock →'),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 6),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 6,
+                          children: redItems.map((item) {
+                            return ActionChip(
+                              avatar: const Icon(Icons.error_outline, size: 16, color: Colors.white),
+                              backgroundColor: Colors.red.shade700,
+                              labelStyle: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                              label: Text('${item.nameEn ?? item.nameTe} (${item.currentStock.toStringAsFixed(0)} ${item.unit})'),
+                              onPressed: () {
+                                provider.markAlertsSeen();
+                                widget.onNavigateToStock?.call();
+                              },
+                            );
+                          }).toList(),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 14),
+              ],
+
+              // C. Weekly Stock Check Card
+              if (recountItems.isNotEmpty) ...[
+                Card(
+                  color: Colors.amber.shade50,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    side: BorderSide(color: Colors.amber.shade400, width: 1.5),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(Icons.checklist_rtl_rounded, color: Colors.amber.shade900, size: 26),
+                            const SizedBox(width: 8),
+                            Text(
+                              AppStrings.weeklyStockCheck,
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.amber.shade900,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 10),
+                        ...recountItems.map((item) {
+                          final countStr = item.currentStock.toStringAsFixed(
+                              item.currentStock.truncateToDouble() == item.currentStock ? 0 : 1);
+                          return Container(
+                            margin: const EdgeInsets.only(bottom: 8),
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(color: Colors.amber.shade200),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  '${item.nameTe} $countStr ${item.unit} ఉన్నాయా? · ${item.nameEn ?? item.nameTe} $countStr ${item.unit} undha?',
+                                  style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                                ),
+                                const SizedBox(height: 8),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.end,
+                                  children: [
+                                    OutlinedButton(
+                                      style: OutlinedButton.styleFrom(
+                                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                                        side: BorderSide(color: Colors.grey.shade400),
+                                      ),
+                                      onPressed: () => _showRecountEditDialog(context, item),
+                                      child: const Text(AppStrings.edit),
+                                    ),
+                                    const SizedBox(width: 10),
+                                    ElevatedButton(
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: const Color(0xFF0B6E5F),
+                                        foregroundColor: Colors.white,
+                                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                      ),
+                                      onPressed: () => provider.confirmRecount(item.id!),
+                                      child: const Text(AppStrings.yes),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          );
+                        }),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 14),
+              ],
+
+              // Large Mic Button
               Material(
                 color: _isListening ? Colors.red.shade600 : theme.colorScheme.primary,
                 shape: const CircleBorder(),
@@ -200,7 +408,7 @@ class _HomeScreenState extends State<HomeScreen> {
               const Divider(),
               const SizedBox(height: 8),
 
-              // "Type instead" section for testing without mic
+              // "Type instead" section
               Row(
                 children: [
                   Expanded(

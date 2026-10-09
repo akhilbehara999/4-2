@@ -36,12 +36,18 @@ class MainShell extends StatefulWidget {
 class _MainShellState extends State<MainShell> {
   int _currentIndex = 0;
 
-  final List<Widget> _screens = const [
-    HomeScreen(),
-    LedgerScreen(),
-    StockScreen(),
-    DashboardScreen(),
-    AssistantScreen(),
+  late final List<Widget> _screens = [
+    HomeScreen(
+      onNavigateToStock: () {
+        setState(() {
+          _currentIndex = 2; // Stock tab
+        });
+      },
+    ),
+    const LedgerScreen(),
+    const StockScreen(),
+    const DashboardScreen(),
+    const AssistantScreen(),
   ];
 
   final List<String> _titles = const [

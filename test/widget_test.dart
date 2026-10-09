@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:log_app/app.dart';
+import 'package:log_app/core/strings.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:sqflite/sqflite_dev.dart';
 
@@ -66,7 +67,7 @@ void main() {
     await tester.tap(find.text('Dashboard'));
     await tester.pumpAndSettle();
     expect(find.widgetWithText(AppBar, 'Dashboard'), findsOneWidget);
-    expect(find.text('Dashboard (డాష్‌బోర్డ్)'), findsOneWidget);
+    expect(find.text('7 రోజులు · 7 Days'), findsOneWidget);
 
     // Navigate to Ask tab
     await tester.tap(find.text('Ask'));
@@ -77,8 +78,7 @@ void main() {
     // Open Settings from app bar icon
     await tester.tap(find.byIcon(Icons.settings_outlined));
     await tester.pumpAndSettle();
-    expect(find.widgetWithText(AppBar, 'Settings'), findsOneWidget);
-    expect(find.text('Settings (సెట్టింగ్స్)'), findsOneWidget);
+    expect(find.widgetWithText(AppBar, AppStrings.settings), findsOneWidget);
 
     // Navigate back from Settings
     await tester.pageBack();

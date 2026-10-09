@@ -5,6 +5,7 @@ import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'app.dart';
 import 'core/env.dart';
+import 'core/notifications.dart';
 import 'data/local_db.dart';
 
 void main() async {
@@ -19,6 +20,15 @@ void main() async {
     await LocalDb.instance.initDb();
   } catch (e) {
     debugPrint('LocalDb initialization error: $e');
+  }
+
+  // Request notifications permission on Android (skip on web)
+  if (!kIsWeb) {
+    try {
+      await NotificationService.instance.init();
+    } catch (e) {
+      debugPrint('NotificationService init error: $e');
+    }
   }
 
   // Initialize Supabase inside try/catch so the app still launches with no keys or no internet
