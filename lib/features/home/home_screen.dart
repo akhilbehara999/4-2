@@ -576,9 +576,12 @@ class _RecentTxnTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final item = items.where((i) => i.id == txn.itemId).firstOrNull;
+    final qtyStr = txn.qty != null
+        ? (txn.qty! % 1 == 0 ? txn.qty!.toInt().toString() : txn.qty.toString())
+        : '';
     final itemDesc = item != null
-        ? '${item.nameEn ?? item.nameTe} (${txn.qty ?? ''} ${item.unit})'
-        : (txn.qty != null ? '${txn.qty}' : '');
+        ? '${item.nameEn ?? item.nameTe} ($qtyStr ${item.unit})'
+        : qtyStr;
 
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),

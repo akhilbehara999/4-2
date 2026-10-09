@@ -497,8 +497,12 @@ class LocalDb {
     final batch = db.batch();
 
     for (int dayOffset = 29; dayOffset >= 0; dayOffset--) {
-      final dayDate = now.subtract(Duration(days: dayOffset));
-      final isWeekend = dayDate.weekday == DateTime.saturday || dayDate.weekday == DateTime.sunday;
+      final targetDate = now.subtract(Duration(days: dayOffset));
+      final y = targetDate.year;
+      final m = targetDate.month;
+      final d = targetDate.day;
+
+      final isWeekend = targetDate.weekday == DateTime.saturday || targetDate.weekday == DateTime.sunday;
       final txnCount = isWeekend ? (8 + random.nextInt(6)) : (3 + random.nextInt(4));
 
       for (int t = 0; t < txnCount; t++) {
@@ -509,7 +513,10 @@ class LocalDb {
         final amount = qty * item.sellPrice;
         final custId = isCredit ? customerIds[random.nextInt(customerIds.length)] : null;
 
-        final txnTime = dayDate.add(Duration(hours: 8 + random.nextInt(12), minutes: random.nextInt(60)));
+        // Build timestamps with DateTime(y, m, d, hour, min)
+        final hour = 8 + random.nextInt(12); // between 8 AM and 7 PM
+        final min = random.nextInt(60);
+        final txnTime = DateTime(y, m, d, hour, min);
 
         batch.insert('txn', {
           'type': type,
@@ -541,7 +548,7 @@ class LocalDb {
         final restockItem = items[random.nextInt(items.length)];
         const restockQty = 30.0;
         itemStock[restockItem.id!] = (itemStock[restockItem.id!] ?? 50.0) + restockQty;
-        final restockTime = dayDate.add(const Duration(hours: 7));
+        final restockTime = DateTime(y, m, d, 7, random.nextInt(60));
         batch.insert('txn', {
           'type': 'restock',
           'item_id': restockItem.id,
@@ -567,7 +574,7 @@ class LocalDb {
         if (curBal > 200) {
           final payAmount = (100 + random.nextInt(4) * 50).toDouble();
           custBalances[custId] = curBal - payAmount;
-          final payTime = dayDate.add(const Duration(hours: 18));
+          final payTime = DateTime(y, m, d, 18, random.nextInt(60));
           batch.insert('txn', {
             'type': 'payment_received',
             'item_id': null,
@@ -584,6 +591,7 @@ class LocalDb {
       // Occasional shop expense
       if (dayOffset % 6 == 1) {
         final expenseAmount = [50.0, 150.0, 300.0, 450.0][random.nextInt(4)];
+        final expenseTime = DateTime(y, m, d, 13, random.nextInt(60));
         batch.insert('txn', {
           'type': 'expense',
           'item_id': null,
@@ -591,7 +599,7 @@ class LocalDb {
           'qty': null,
           'amount': expenseAmount,
           'raw_text': 'demo',
-          'created_at': dayDate.add(const Duration(hours: 13)).toIso8601String(),
+          'created_at': expenseTime.toIso8601String(),
           'synced': 0,
         });
       }

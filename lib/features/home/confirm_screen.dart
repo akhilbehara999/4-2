@@ -33,17 +33,19 @@ class _ConfirmScreenState extends State<ConfirmScreen> {
   ];
 
   String _formatQty(double val) {
-    if (val == val.truncateToDouble()) {
+    if (val % 1 == 0) {
       return val.toInt().toString();
     }
-    return val.toString().replaceAll(RegExp(r'([.]*0)(?!.*\d)'), '');
+    final s = val.toString();
+    return s.contains('.') ? s.replaceAll(RegExp(r'0+$'), '').replaceAll(RegExp(r'\.$'), '') : s;
   }
 
   String _formatAmount(double val) {
-    if (val == val.truncateToDouble()) {
+    if (val % 1 == 0) {
       return val.toInt().toString();
     }
-    return val.toString();
+    final s = val.toString();
+    return s.contains('.') ? s.replaceAll(RegExp(r'0+$'), '').replaceAll(RegExp(r'\.$'), '') : s;
   }
 
   String? _getUnitConversionNotice() {

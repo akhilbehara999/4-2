@@ -259,6 +259,17 @@ class _MetricCard extends StatelessWidget {
   }
 }
 
+String _formatChartAxis(double val) {
+  if (val <= 0) return '';
+  if (val < 1000) {
+    return '₹${val.toInt()}';
+  } else if (val < 10000 && val % 1000 != 0) {
+    return '₹${(val / 1000).toStringAsFixed(1)}k';
+  } else {
+    return '₹${(val / 1000).toInt()}k';
+  }
+}
+
 class _DailySalesChartCard extends StatelessWidget {
   final List<DailySalesPoint> points;
 
@@ -309,11 +320,11 @@ class _DailySalesChartCard extends StatelessWidget {
                     leftTitles: AxisTitles(
                       sideTitles: SideTitles(
                         showTitles: true,
-                        reservedSize: 40,
+                        reservedSize: 44,
                         getTitlesWidget: (val, meta) {
                           if (val == 0) return const SizedBox.shrink();
                           return Text(
-                            '${(val / 1000).toStringAsFixed(0)}k',
+                            _formatChartAxis(val),
                             style: const TextStyle(fontSize: 10, color: Colors.grey),
                           );
                         },
@@ -416,11 +427,11 @@ class _TopItemsChartCard extends StatelessWidget {
                     leftTitles: AxisTitles(
                       sideTitles: SideTitles(
                         showTitles: true,
-                        reservedSize: 40,
+                        reservedSize: 44,
                         getTitlesWidget: (val, meta) {
                           if (val == 0) return const SizedBox.shrink();
                           return Text(
-                            '${(val / 1000).toStringAsFixed(0)}k',
+                            _formatChartAxis(val),
                             style: const TextStyle(fontSize: 10, color: Colors.grey),
                           );
                         },
