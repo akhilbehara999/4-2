@@ -94,11 +94,43 @@ const Map<String, String> ITEM_SYNONYMS = {
 
 /// Supported unit variations mapped to canonical units.
 const Map<String, List<String>> UNIT_SYNONYMS = {
-  'kg': ['kilo', 'kilos', 'kg', 'కిలోల', 'కిలోలు', 'కిలో', 'కేజీ'],
-  'litre': ['litre', 'litres', 'liter', 'liters', 'l', 'లీటర్ల', 'లీటర్లు', 'లీటరు', 'లీటర్'],
+  'kg': ['kilo', 'kilos', 'kg', 'kgs', 'కిలోల', 'కిలోలు', 'కిలో', 'కేజీ'],
+  'litre': ['litre', 'litres', 'liter', 'liters', 'l', 'lt', 'ltr', 'లీటర్ల', 'లీటర్లు', 'లీటరు', 'లీటర్'],
   'packet': ['packet', 'packets', 'pkt', 'packetlu', 'పాకెట్లు', 'ప్యాకెట్లు', 'పాకెట్', 'ప్యాకెట్'],
-  'gram': ['gram', 'grams', 'gm', 'g', 'గ్రాములు', 'గ్రాము'],
+  'gram': ['gram', 'grams', 'gm', 'gms', 'g', 'గ్రాములు', 'గ్రాము', 'గ్రాం'],
+  'ml': ['ml', 'milli', 'millilitre', 'millilitres', 'మిల్లీ', 'మిల్లీలీటర్లు', 'మిల్లీలీటర్ల'],
 };
+
+/// Checks if [word] occurs as a distinct whole word in [text].
+/// Word characters include Latin alphanumeric ([a-zA-Z0-9]) and Telugu script (\u0C00-\u0C7F).
+/// Word boundaries are defined by start/end of string or non-word characters.
+bool containsWord(String text, String word) {
+  final cleanWord = word.trim();
+  if (cleanWord.isEmpty) return false;
+  final pattern = '(?:^|[^a-zA-Z0-9\\u0C00-\\u0C7F])${RegExp.escape(cleanWord)}(?:[^a-zA-Z0-9\\u0C00-\\u0C7F]|\$)';
+  return RegExp(pattern, caseSensitive: false).hasMatch(text);
+}
+
+/// Matches customer name against text using whole-word boundaries.
+/// Handles customer names with parentheses (e.g. "Ramesh (రామేష్)"),
+/// and common Telugu honorific/case suffixes (ki, ku, gariki, కి, కు, గారికి).
+bool matchesCustomer(String text, String customerName) {
+  if (containsWord(text, customerName)) return true;
+  final suffixes = ['ki', 'ku', 'gariki', 'కి', 'కు', 'గారికి'];
+  final nameTokens = customerName
+      .split(RegExp(r'[()/,]+'))
+      .map((t) => t.trim())
+      .where((t) => t.length >= 2);
+  for (final token in nameTokens) {
+    if (containsWord(text, token)) return true;
+    for (final s in suffixes) {
+      if (containsWord(text, '$token$s') || containsWord(text, '$token $s')) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
 
 class ParsedEntry {
   final String? type;
@@ -147,13 +179,12 @@ ParsedEntry parse(
     return ParsedEntry(rawText: text);
   }
 
-  final lowerText = cleanText.toLowerCase();
-
-  // 1. Resolve Customer
+  // 1. Resolve Customer (match whole words only, longest customer name first)
   String? customerName;
-  // First match against existing customer list
-  for (final c in customers) {
-    if (lowerText.contains(c.name.toLowerCase())) {
+  final sortedCustomers = List<Customer>.from(customers)
+    ..sort((a, b) => b.name.length.compareTo(a.name.length));
+  for (final c in sortedCustomers) {
+    if (matchesCustomer(cleanText, c.name)) {
       customerName = c.name;
       break;
     }
@@ -169,7 +200,7 @@ ParsedEntry parse(
     final match = kiRegex.firstMatch(cleanText);
     if (match != null) {
       final candidate = match.group(1)?.trim();
-      final excluded = {'baaki', 'baki', 'బాకీ', 'appu', 'అప్పు', 'manaki', 'udhar'};
+      final excluded = {'baaki', 'baki', 'బాకీ', 'appu', 'అప్పు', 'manaki', 'udhar', 'pappu', 'పప్పు'};
       if (candidate != null &&
           candidate.isNotEmpty &&
           !excluded.contains(candidate.toLowerCase())) {
@@ -179,7 +210,6 @@ ParsedEntry parse(
   }
 
   // 2. Resolve Quantity & Unit
-  // TODO: Add support for Telugu number words (ఒకటి, రెండు, మూడు, etc.)
   double? qty;
   String? unit;
 
@@ -203,8 +233,20 @@ ParsedEntry parse(
     }
   }
 
+  // Convert grams to kg and ml to litres
+  if (unit == 'gram') {
+    if (qty != null) {
+      qty = qty / 1000.0;
+    }
+    unit = 'kg';
+  } else if (unit == 'ml') {
+    if (qty != null) {
+      qty = qty / 1000.0;
+    }
+    unit = 'litre';
+  }
+
   // 3. Resolve Amount
-  // TODO: Add support for Telugu number words for amounts
   double? amount;
   // Match prefix e.g. rs 300, ₹300, రూ. 300
   final prefixAmountRegex = RegExp(
@@ -239,16 +281,23 @@ ParsedEntry parse(
     }
   }
 
-  // 4. Resolve Item
+  // 4. Resolve Item (match whole words only, avoid "Rice" matching "price")
   int? itemId;
   String? itemName;
 
-  // Check database items first (Telugu or English name)
-  for (final item in items) {
+  // Check database items first (Telugu or English name) - check whole word
+  final sortedItems = List<Item>.from(items)
+    ..sort((a, b) {
+      final lenA = (a.nameEn?.length ?? 0) > a.nameTe.length ? (a.nameEn?.length ?? 0) : a.nameTe.length;
+      final lenB = (b.nameEn?.length ?? 0) > b.nameTe.length ? (b.nameEn?.length ?? 0) : b.nameTe.length;
+      return lenB.compareTo(lenA);
+    });
+
+  for (final item in sortedItems) {
     final enMatch = item.nameEn != null &&
         item.nameEn!.isNotEmpty &&
-        lowerText.contains(item.nameEn!.toLowerCase());
-    final teMatch = lowerText.contains(item.nameTe.toLowerCase());
+        containsWord(cleanText, item.nameEn!);
+    final teMatch = containsWord(cleanText, item.nameTe);
     if (enMatch || teMatch) {
       itemId = item.id;
       itemName = item.nameEn ?? item.nameTe;
@@ -257,10 +306,12 @@ ParsedEntry parse(
     }
   }
 
-  // If no DB item matched, check synonym dictionary
+  // If no DB item matched, check synonym dictionary with whole-word matching
   if (itemName == null) {
-    for (final syn in ITEM_SYNONYMS.entries) {
-      if (lowerText.contains(syn.key.toLowerCase())) {
+    final synEntries = ITEM_SYNONYMS.entries.toList()
+      ..sort((a, b) => b.key.length.compareTo(a.key.length));
+    for (final syn in synEntries) {
+      if (containsWord(cleanText, syn.key)) {
         final canonical = syn.value;
         // See if canonical exists in DB items
         final dbItem = items.firstWhere(
@@ -277,17 +328,22 @@ ParsedEntry parse(
     }
   }
 
-  // 5. Resolve Type
+  // 5. Resolve Type (match whole words only so "pappu" doesn't trigger "appu")
   String? type;
-  if (TYPE_KEYWORDS['credit_sale']!.any((kw) => lowerText.contains(kw.toLowerCase()))) {
+  bool matchesTypeKeyword(String typeKey) {
+    final keywords = TYPE_KEYWORDS[typeKey] ?? [];
+    return keywords.any((kw) => containsWord(cleanText, kw));
+  }
+
+  if (matchesTypeKeyword('credit_sale')) {
     type = 'credit_sale';
-  } else if (TYPE_KEYWORDS['payment_received']!.any((kw) => lowerText.contains(kw.toLowerCase()))) {
+  } else if (matchesTypeKeyword('payment_received')) {
     type = 'payment_received';
-  } else if (TYPE_KEYWORDS['restock']!.any((kw) => lowerText.contains(kw.toLowerCase()))) {
+  } else if (matchesTypeKeyword('restock')) {
     type = 'restock';
-  } else if (TYPE_KEYWORDS['expense']!.any((kw) => lowerText.contains(kw.toLowerCase()))) {
+  } else if (matchesTypeKeyword('expense')) {
     type = 'expense';
-  } else if (TYPE_KEYWORDS['cash_sale']!.any((kw) => lowerText.contains(kw.toLowerCase()))) {
+  } else if (matchesTypeKeyword('cash_sale')) {
     type = 'cash_sale';
   }
 

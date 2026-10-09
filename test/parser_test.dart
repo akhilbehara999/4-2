@@ -144,5 +144,81 @@ void main() {
       expect(res.type, 'expense');
       expect(res.amount, 2000.0);
     });
+
+    test('11. pappu is NOT read as credit_sale (whole-word matching fix)', () {
+      final res = parse(
+        '1 kg pappu 120 rs',
+        sampleItems,
+        sampleCustomers,
+      );
+      expect(res.type, 'cash_sale');
+      expect(res.itemName, 'Dal');
+      expect(res.qty, 1.0);
+      expect(res.unit, 'kg');
+      expect(res.amount, 120.0);
+    });
+
+    test('12. price does NOT match Rice (whole-word matching fix)', () {
+      final res = parse(
+        'sugar price 50 rs',
+        sampleItems,
+        sampleCustomers,
+      );
+      expect(res.itemName, 'Sugar');
+      expect(res.amount, 50.0);
+    });
+
+    test('13. Short customer name does NOT match inside longer words', () {
+      final customersWithShort = [
+        ...sampleCustomers,
+        Customer(id: 5, name: 'Anu', balanceDue: 0),
+      ];
+      final res = parse(
+        'Anupama ki 5 kg biyyam 250 rs',
+        sampleItems,
+        customersWithShort,
+      );
+      // "Anupama" is extracted as customer, not the substring "Anu"
+      expect(res.customerName, 'Anupama');
+      expect(res.itemName, 'Rice');
+    });
+
+    test('14. Gram to kg unit conversion (500 gram -> 0.5 kg)', () {
+      final res = parse(
+        '500 gram sugar 25 rs',
+        sampleItems,
+        sampleCustomers,
+      );
+      expect(res.type, 'cash_sale');
+      expect(res.itemName, 'Sugar');
+      expect(res.qty, 0.5);
+      expect(res.unit, 'kg');
+      expect(res.amount, 25.0);
+    });
+
+    test('15. Millilitre to litre unit conversion (500 ml -> 0.5 litre)', () {
+      final res = parse(
+        '500 ml oil 75 rs',
+        sampleItems,
+        sampleCustomers,
+      );
+      expect(res.type, 'cash_sale');
+      expect(res.itemName, 'Oil');
+      expect(res.qty, 0.5);
+      expect(res.unit, 'litre');
+      expect(res.amount, 75.0);
+    });
+
+    test('16. Telugu script gram to kg conversion (500 గ్రాములు -> 0.5 kg)', () {
+      final res = parse(
+        '500 గ్రాములు పంచదార 25 రూపాయలు',
+        sampleItems,
+        sampleCustomers,
+      );
+      expect(res.itemName, 'Sugar');
+      expect(res.qty, 0.5);
+      expect(res.unit, 'kg');
+      expect(res.amount, 25.0);
+    });
   });
 }

@@ -5,7 +5,7 @@
   <img src="https://img.shields.io/badge/Dart-%230175C2.svg?style=for-the-badge&logo=dart&logoColor=white" alt="Dart" />
   <img src="https://img.shields.io/badge/SQLite-07405E?style=for-the-badge&logo=sqlite&logoColor=white" alt="SQLite" />
   <img src="https://img.shields.io/badge/Platforms-Android%20%7C%20Web-blue?style=for-the-badge" alt="Platforms" />
-  <img src="https://img.shields.io/badge/Tests-19%20Passing-brightgreen?style=for-the-badge" alt="Tests" />
+  <img src="https://img.shields.io/badge/Tests-25%20Passing-brightgreen?style=for-the-badge" alt="Tests" />
   <img src="https://img.shields.io/badge/Architecture-Offline--First-orange?style=for-the-badge" alt="Offline-First" />
 </p>
 

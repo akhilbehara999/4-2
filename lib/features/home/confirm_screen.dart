@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../data/kirana_provider.dart';
+import '../../data/models.dart';
 import '../../data/parser.dart';
 
 class ConfirmScreen extends StatefulWidget {
@@ -31,16 +32,53 @@ class _ConfirmScreenState extends State<ConfirmScreen> {
     {'value': 'expense', 'label': 'Expense (ఖర్చు/బిల్లు)'},
   ];
 
+  String _formatQty(double val) {
+    if (val == val.truncateToDouble()) {
+      return val.toInt().toString();
+    }
+    return val.toString().replaceAll(RegExp(r'([.]*0)(?!.*\d)'), '');
+  }
+
+  String _formatAmount(double val) {
+    if (val == val.truncateToDouble()) {
+      return val.toInt().toString();
+    }
+    return val.toString();
+  }
+
+  String? _getUnitConversionNotice() {
+    final raw = widget.parsedEntry.rawText.toLowerCase();
+    if (raw.contains('gram') || raw.contains('gm') || raw.contains('గ్రాము')) {
+      return 'Converted from grams to kg (గ్రాములు కిలోలుగా మార్చబడింది)';
+    }
+    if (raw.contains('ml') || raw.contains('మిల్లీ')) {
+      return 'Converted from ml to litres (మిల్లీలీటర్లు లీటర్లుగా మార్చబడింది)';
+    }
+    return null;
+  }
+
   @override
   void initState() {
     super.initState();
     _selectedType = widget.parsedEntry.type ?? 'cash_sale';
     _customerController = TextEditingController(text: widget.parsedEntry.customerName ?? '');
+
+    // Convert grams to kg and ml to litres if parsed unit is gram or ml
+    double? initialQty = widget.parsedEntry.qty;
+    final parsedUnit = widget.parsedEntry.unit?.toLowerCase();
+    if (initialQty != null) {
+      if (parsedUnit == 'gram' || parsedUnit == 'gm' || parsedUnit == 'g') {
+        initialQty = initialQty / 1000.0;
+      } else if (parsedUnit == 'ml' || parsedUnit == 'millilitre') {
+        initialQty = initialQty / 1000.0;
+      }
+    }
+
     _qtyController = TextEditingController(
-      text: widget.parsedEntry.qty != null ? widget.parsedEntry.qty.toString() : '',
+      text: initialQty != null ? _formatQty(initialQty) : '',
     );
     _amountController = TextEditingController(
-      text: widget.parsedEntry.amount != null ? widget.parsedEntry.amount.toString() : '',
+      text: widget.parsedEntry.amount != null ? _formatAmount(widget.parsedEntry.amount!) : '',
     );
     _selectedItemId = widget.parsedEntry.itemId;
 
@@ -165,6 +203,20 @@ class _ConfirmScreenState extends State<ConfirmScreen> {
         _selectedItemId = match.first.id;
       }
     }
+
+    Item? selectedItem;
+    for (final it in items) {
+      if (it.id == _selectedItemId) {
+        selectedItem = it;
+        break;
+      }
+    }
+    final currentUnit = selectedItem?.unit ??
+        (widget.parsedEntry.unit == 'gram'
+            ? 'kg'
+            : widget.parsedEntry.unit == 'ml'
+                ? 'litre'
+                : widget.parsedEntry.unit ?? 'kg');
 
     final isEmptyParse = widget.parsedEntry.isEmpty;
 
@@ -362,6 +414,23 @@ class _ConfirmScreenState extends State<ConfirmScreen> {
                     ),
                     const SizedBox(width: 4),
                     const Text('*', style: TextStyle(color: Colors.red, fontSize: 18)),
+                    const Spacer(),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF0B6E5F).withAlpha(25),
+                        borderRadius: BorderRadius.circular(6),
+                        border: Border.all(color: const Color(0xFF0B6E5F).withAlpha(80)),
+                      ),
+                      child: Text(
+                        'Unit: $currentUnit',
+                        style: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF0B6E5F),
+                        ),
+                      ),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 6),
@@ -370,7 +439,10 @@ class _ConfirmScreenState extends State<ConfirmScreen> {
                   keyboardType: const TextInputType.numberWithOptions(decimal: true),
                   style: const TextStyle(fontSize: 18),
                   decoration: InputDecoration(
-                    hintText: 'e.g. 2, 5.5',
+                    suffixText: currentUnit,
+                    helperText: _getUnitConversionNotice(),
+                    helperMaxLines: 2,
+                    hintText: 'e.g. 1, 0.5',
                     errorText: !_isQtyValid() ? 'Valid quantity is required' : null,
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                     enabledBorder: OutlineInputBorder(
