@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'analytics.dart';
 import 'local_db.dart';
 import 'models.dart';
+import 'parser.dart';
 
 class KiranaProvider extends ChangeNotifier {
   final LocalDb _db = LocalDb.instance;
@@ -61,6 +62,8 @@ class KiranaProvider extends ChangeNotifier {
     double? qty,
     double? amount,
     required String rawText,
+    String? audioPath,
+    ParsedEntry? parsedEntry,
   }) async {
     final id = await _db.saveTransaction(
       type: type,
@@ -69,9 +72,27 @@ class KiranaProvider extends ChangeNotifier {
       qty: qty,
       amount: amount,
       rawText: rawText,
+      audioPath: audioPath,
+      parsedEntry: parsedEntry,
     );
     await loadData();
     return id;
+  }
+
+  Future<bool> deleteTransaction(int txnId) async {
+    final ok = await _db.deleteTransaction(txnId);
+    if (ok) {
+      await loadData();
+    }
+    return ok;
+  }
+
+  Future<List<Txn>> getCustomerTransactions(int customerId) async {
+    return await _db.getCustomerTransactions(customerId);
+  }
+
+  Future<Map<String, dynamic>> getExtractionAccuracy() async {
+    return await _db.getExtractionAccuracy();
   }
 
   Future<int> addItem(Item item) async {

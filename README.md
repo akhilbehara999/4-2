@@ -5,7 +5,7 @@
   <img src="https://img.shields.io/badge/Dart-%230175C2.svg?style=for-the-badge&logo=dart&logoColor=white" alt="Dart" />
   <img src="https://img.shields.io/badge/SQLite-07405E?style=for-the-badge&logo=sqlite&logoColor=white" alt="SQLite" />
   <img src="https://img.shields.io/badge/Platforms-Android%20%7C%20Web-blue?style=for-the-badge" alt="Platforms" />
-  <img src="https://img.shields.io/badge/Tests-25%20Passing-brightgreen?style=for-the-badge" alt="Tests" />
+  <img src="https://img.shields.io/badge/Tests-36%20Passing-brightgreen?style=for-the-badge" alt="Tests" />
   <img src="https://img.shields.io/badge/Architecture-Offline--First-orange?style=for-the-badge" alt="Offline-First" />
 </p>
 
@@ -81,12 +81,27 @@ Kirana shopkeepers operate in high-velocity, hands-busy retail environments. Tra
   - Daily sales timeline bar chart.
   - Top 5 revenue-generating items bar chart.
 - **Operational Breakdowns**: Slow-moving products, top debtor customers, and critically low inventory ($\le 3$ days).
-- Clean bilingual empty state (*"ఇంకా డేటా లేదు · No data yet"*).
-
 ### 7. Synthetic Kirana Demo Generator (`lib/features/settings/settings_screen.dart`)
 - Built for quick testing and demonstrations in debug builds (`kDebugMode`).
 - **Generate 30 Days Demo Data**: Synthesizes 30 days of realistic Kirana commerce with higher weekend customer volumes, recurring restocks, debt payments, and store utilities.
 - **Reset All Data**: One-tap clean wipe of all tables (`txn`, `stock_log`, `customer`, `alert`, `item`) and reseeding of the 8 default staples.
+
+### 8. Transaction Undo & Rollback System (`lib/data/local_db.dart`)
+- **Fix Misheard Entries**: Any misheard transaction or typo can be undone/deleted with 1 tap directly from the Home screen's Recent Entries or Customer Ledger history.
+- **ACID Data Integrity**:
+  - Reverses stock inventory immediately (adds back sold quantities, deducts errant restocks).
+  - Automatically records `stock_log` entries with audit reasons (`undo_sale`, `undo_restock`).
+  - Rebalances customer ledger debt (`balance_due`).
+  - Cleans up corresponding records in `correction_log` and `txn`.
+
+### 9. Upgraded Udhar Ledger & Customer Management (`lib/features/ledger/ledger_screen.dart`)
+- **Customer Transaction History**: Interactive bottom sheet displaying full chronological history of credit taken (orange) and payments settled (teal) with item details, quantities, and timestamps.
+- **"Mark Paid" (బాకీ జమ) Action**: Instant payment recording with preset chips (*Full Amount, ₹100, ₹500*) and partial settlement support.
+- **Customer Name Autocomplete**: Suggestions automatically drawn from existing customer accounts in search, direct entry, and the voice confirmation sheet.
+
+### 10. Extraction Accuracy Telemetry & Correction Log (`correction_log`)
+- Stores complete audit trail: `raw_text`, `audio_path` (`voice_<timestamp>.wav`), initial parsed extraction vs. final user-confirmed values.
+- Computes on-device NLP accuracy metrics: tracks whether shopkeepers needed to edit any fields, providing verifiable dataset accuracy statistics for field reports.
 
 ---
 

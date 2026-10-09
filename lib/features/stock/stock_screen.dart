@@ -502,6 +502,7 @@ class StockScreen extends StatelessWidget {
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
+        heroTag: null,
         backgroundColor: const Color(0xFF0B6E5F),
         foregroundColor: Colors.white,
         icon: const Icon(Icons.add),

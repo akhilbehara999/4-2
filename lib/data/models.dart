@@ -205,3 +205,84 @@ class Alert {
     );
   }
 }
+
+class CorrectionLog {
+  final int? id;
+  final int? txnId;
+  final String rawText;
+  final String? audioPath;
+  final String? parsedType;
+  final String? parsedCustomer;
+  final int? parsedItemId;
+  final double? parsedQty;
+  final double? parsedAmount;
+  final String finalType;
+  final String? finalCustomer;
+  final int? finalItemId;
+  final double? finalQty;
+  final double finalAmount;
+  final int wasEdited;
+  final String createdAt;
+
+  CorrectionLog({
+    this.id,
+    this.txnId,
+    required this.rawText,
+    this.audioPath,
+    this.parsedType,
+    this.parsedCustomer,
+    this.parsedItemId,
+    this.parsedQty,
+    this.parsedAmount,
+    required this.finalType,
+    this.finalCustomer,
+    this.finalItemId,
+    this.finalQty,
+    required this.finalAmount,
+    this.wasEdited = 0,
+    required this.createdAt,
+  });
+
+  Map<String, dynamic> toMap() {
+    return {
+      if (id != null) 'id': id,
+      'txn_id': txnId,
+      'raw_text': rawText,
+      'audio_path': audioPath,
+      'parsed_type': parsedType,
+      'parsed_customer': parsedCustomer,
+      'parsed_item_id': parsedItemId,
+      'parsed_qty': parsedQty,
+      'parsed_amount': parsedAmount,
+      'final_type': finalType,
+      'final_customer': finalCustomer,
+      'final_item_id': finalItemId,
+      'final_qty': finalQty,
+      'final_amount': finalAmount,
+      'was_edited': wasEdited,
+      'created_at': createdAt,
+    };
+  }
+
+  factory CorrectionLog.fromMap(Map<String, dynamic> map) {
+    return CorrectionLog(
+      id: map['id'] as int?,
+      txnId: map['txn_id'] as int?,
+      rawText: map['raw_text'] as String,
+      audioPath: map['audio_path'] as String?,
+      parsedType: map['parsed_type'] as String?,
+      parsedCustomer: map['parsed_customer'] as String?,
+      parsedItemId: map['parsed_item_id'] as int?,
+      parsedQty: (map['parsed_qty'] as num?)?.toDouble(),
+      parsedAmount: (map['parsed_amount'] as num?)?.toDouble(),
+      finalType: map['final_type'] as String,
+      finalCustomer: map['final_customer'] as String?,
+      finalItemId: map['final_item_id'] as int?,
+      finalQty: (map['final_qty'] as num?)?.toDouble(),
+      finalAmount: (map['final_amount'] as num?)?.toDouble() ?? 0.0,
+      wasEdited: (map['was_edited'] as num?)?.toInt() ?? 0,
+      createdAt: map['created_at'] as String,
+    );
+  }
+}
+

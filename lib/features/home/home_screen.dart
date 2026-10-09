@@ -57,7 +57,10 @@ class _HomeScreenState extends State<HomeScreen> {
       await _voiceService.stop();
       if (!_handled && _partialText.trim().isNotEmpty) {
         _handled = true;
-        _processText(_partialText);
+        _processText(
+          _partialText,
+          audioPath: 'voice_${DateTime.now().millisecondsSinceEpoch}.wav',
+        );
       }
     } else {
       _handled = false;
@@ -78,7 +81,10 @@ class _HomeScreenState extends State<HomeScreen> {
               setState(() {
                 _isListening = false;
               });
-              _processText(text);
+              _processText(
+                text,
+                audioPath: 'voice_${DateTime.now().millisecondsSinceEpoch}.wav',
+              );
             }
           }
         },
@@ -89,7 +95,10 @@ class _HomeScreenState extends State<HomeScreen> {
             });
             if (!_handled && _partialText.trim().isNotEmpty) {
               _handled = true;
-              _processText(_partialText);
+              _processText(
+                _partialText,
+                audioPath: 'voice_${DateTime.now().millisecondsSinceEpoch}.wav',
+              );
             }
           }
         },
@@ -119,7 +128,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  void _processText(String text) {
+  void _processText(String text, {String? audioPath}) {
     if (text.trim().isEmpty) return;
 
     final provider = context.read<KiranaProvider>();
@@ -127,7 +136,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) => ConfirmScreen(parsedEntry: parsed),
+        builder: (_) => ConfirmScreen(
+          parsedEntry: parsed,
+          audioPath: audioPath,
+        ),
       ),
     );
   }
@@ -621,6 +633,55 @@ class _RecentTxnTile extends StatelessWidget {
               '"${txn.rawText}"',
               style: TextStyle(fontSize: 13, color: Colors.grey.shade600, fontStyle: FontStyle.italic),
             ),
+        ],
+      ),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          IconButton(
+            icon: Icon(Icons.delete_outline, color: Colors.red.shade400, size: 22),
+            tooltip: 'Undo / Delete Entry (ఎంట్రీ రద్దు చేయి)',
+            onPressed: () => _confirmDeleteTxn(context, txn),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _confirmDeleteTxn(BuildContext context, Txn txn) {
+    showDialog(
+      context: context,
+      builder: (dialogCtx) => AlertDialog(
+        title: const Text('రద్దు చేయండి · Undo Entry?'),
+        content: const Text(
+          'Are you sure you want to delete this entry? Stock and customer balance changes will be reversed.\n\n(స్టాక్ మరియు బాకీ మార్పులు వెనక్కి తిప్పబడతాయి).',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogCtx).pop(),
+            child: const Text(AppStrings.cancel),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red.shade700,
+              foregroundColor: Colors.white,
+            ),
+            onPressed: () async {
+              Navigator.of(dialogCtx).pop();
+              if (txn.id != null) {
+                await context.read<KiranaProvider>().deleteTransaction(txn.id!);
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Entry undone and deleted · ఎంట్రీ రద్దు చేయబడింది'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              }
+            },
+            child: const Text('Delete · రద్దు చేయి'),
+          ),
         ],
       ),
     );

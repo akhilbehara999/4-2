@@ -148,5 +148,31 @@ void main() {
     final restoredAlert = Alert.fromMap(alertMap);
     expect(restoredAlert.predictedDaysLeft, 2);
     expect(restoredAlert.seen, 0);
+
+    final correction = CorrectionLog(
+      id: 1,
+      txnId: 10,
+      rawText: '2 kg sugar 80',
+      audioPath: 'voice_12345.wav',
+      parsedType: 'cash_sale',
+      finalType: 'cash_sale',
+      parsedCustomer: null,
+      finalCustomer: null,
+      parsedItemId: 2,
+      finalItemId: 2,
+      parsedQty: 2.0,
+      finalQty: 2.0,
+      parsedAmount: 80.0,
+      finalAmount: 80.0,
+      wasEdited: 0,
+      createdAt: '2026-10-09T18:00:00Z',
+    );
+    final corrMap = correction.toMap();
+    final restoredCorrection = CorrectionLog.fromMap(corrMap);
+    expect(restoredCorrection.rawText, '2 kg sugar 80');
+    expect(restoredCorrection.audioPath, 'voice_12345.wav');
+    expect(restoredCorrection.wasEdited, 0);
+    expect(restoredCorrection.finalAmount, 80.0);
   });
 }
+

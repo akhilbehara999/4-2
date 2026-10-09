@@ -102,6 +102,28 @@ class LocalDb {
         FOREIGN KEY (item_id) REFERENCES item(id)
       )
     ''');
+
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS correction_log (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        txn_id INTEGER,
+        raw_text TEXT NOT NULL,
+        audio_path TEXT,
+        parsed_type TEXT,
+        parsed_customer TEXT,
+        parsed_item_id INTEGER,
+        parsed_qty REAL,
+        parsed_amount REAL,
+        final_type TEXT NOT NULL,
+        final_customer TEXT,
+        final_item_id INTEGER,
+        final_qty REAL,
+        final_amount REAL NOT NULL,
+        was_edited INTEGER NOT NULL DEFAULT 0,
+        created_at TEXT NOT NULL,
+        FOREIGN KEY (txn_id) REFERENCES txn(id)
+      )
+    ''');
   }
 
   Future<void> _seedDemoItemsIfEmpty(Database db) async {
@@ -134,6 +156,8 @@ class LocalDb {
     double? qty,
     double? amount,
     required String rawText,
+    String? audioPath,
+    ParsedEntry? parsedEntry,
   }) async {
     final db = await database;
     return await db.transaction<int>((txn) async {
@@ -229,12 +253,150 @@ class LocalDb {
         'qty': qty,
         'amount': amount ?? 0.0,
         'raw_text': rawText,
+        'audio_path': audioPath,
         'created_at': DateTime.now().toIso8601String(),
         'synced': 0,
       });
 
+      // Write correction log comparing parsed values against final saved values
+      final wasEdited = parsedEntry != null &&
+          (parsedEntry.type != type ||
+           (parsedEntry.customerName ?? '').trim().toLowerCase() != (customerName ?? '').trim().toLowerCase() ||
+           parsedEntry.itemId != itemId ||
+           parsedEntry.qty != qty ||
+           parsedEntry.amount != (amount ?? 0.0));
+
+      await txn.insert('correction_log', {
+        'txn_id': txnId,
+        'raw_text': rawText,
+        'audio_path': audioPath,
+        'parsed_type': parsedEntry?.type,
+        'parsed_customer': parsedEntry?.customerName,
+        'parsed_item_id': parsedEntry?.itemId,
+        'parsed_qty': parsedEntry?.qty,
+        'parsed_amount': parsedEntry?.amount,
+        'final_type': type,
+        'final_customer': customerName,
+        'final_item_id': itemId,
+        'final_qty': qty,
+        'final_amount': amount ?? 0.0,
+        'was_edited': wasEdited ? 1 : 0,
+        'created_at': DateTime.now().toIso8601String(),
+      });
+
       return txnId;
     });
+  }
+
+  Future<bool> deleteTransaction(int txnId) async {
+    final db = await database;
+    return await db.transaction<bool>((txn) async {
+      final rows = await txn.query('txn', where: 'id = ?', whereArgs: [txnId], limit: 1);
+      if (rows.isEmpty) return false;
+      final row = rows.first;
+      final type = row['type'] as String;
+      final itemId = row['item_id'] as int?;
+      final customerId = row['customer_id'] as int?;
+      final qty = (row['qty'] as num?)?.toDouble();
+      final amount = (row['amount'] as num?)?.toDouble() ?? 0.0;
+
+      // 1. Reverse stock changes
+      if (itemId != null && qty != null && qty > 0) {
+        final itemRows = await txn.query('item', where: 'id = ?', whereArgs: [itemId], limit: 1);
+        if (itemRows.isNotEmpty) {
+          final currentStock = (itemRows.first['current_stock'] as num?)?.toDouble() ?? 0.0;
+          double stockChange = 0.0;
+          String reason = 'undo';
+          if (type == 'cash_sale' || type == 'credit_sale') {
+            stockChange = qty; // Add back inventory
+            reason = 'undo_sale';
+          } else if (type == 'restock') {
+            stockChange = -qty; // Deduct erroneously restocked inventory
+            reason = 'undo_restock';
+          }
+
+          if (stockChange != 0.0) {
+            await txn.update(
+              'item',
+              {'current_stock': currentStock + stockChange},
+              where: 'id = ?',
+              whereArgs: [itemId],
+            );
+            await txn.insert('stock_log', {
+              'item_id': itemId,
+              'change': stockChange,
+              'reason': reason,
+              'created_at': DateTime.now().toIso8601String(),
+            });
+          }
+        }
+      }
+
+      // 2. Reverse customer balance changes
+      if (customerId != null) {
+        final custRows = await txn.query('customer', where: 'id = ?', whereArgs: [customerId], limit: 1);
+        if (custRows.isNotEmpty) {
+          final balanceDue = (custRows.first['balance_due'] as num?)?.toDouble() ?? 0.0;
+          double newBalance = balanceDue;
+          if (type == 'credit_sale') {
+            newBalance = (balanceDue - amount).clamp(0.0, double.infinity);
+          } else if (type == 'payment_received') {
+            newBalance = balanceDue + amount;
+          }
+          await txn.update(
+            'customer',
+            {'balance_due': newBalance},
+            where: 'id = ?',
+            whereArgs: [customerId],
+          );
+        }
+      }
+
+      // 3. Delete from correction_log and txn
+      await txn.delete('correction_log', where: 'txn_id = ?', whereArgs: [txnId]);
+      await txn.delete('txn', where: 'id = ?', whereArgs: [txnId]);
+      return true;
+    });
+  }
+
+  Future<List<Txn>> getCustomerTransactions(int customerId) async {
+    final db = await database;
+    final results = await db.query(
+      'txn',
+      where: 'customer_id = ?',
+      whereArgs: [customerId],
+      orderBy: 'id DESC',
+    );
+    return results.map((m) => Txn.fromMap(m)).toList();
+  }
+
+  Future<List<CorrectionLog>> getCorrectionLogs() async {
+    final db = await database;
+    final results = await db.query('correction_log', orderBy: 'id DESC');
+    return results.map((m) => CorrectionLog.fromMap(m)).toList();
+  }
+
+  Future<Map<String, dynamic>> getExtractionAccuracy() async {
+    final db = await database;
+    final totalCount = Sqflite.firstIntValue(
+      await db.rawQuery('SELECT COUNT(*) FROM correction_log'),
+    ) ?? 0;
+    if (totalCount == 0) {
+      return {
+        'total': 0,
+        'exact_matches': 0,
+        'accuracy_percentage': 100.0,
+      };
+    }
+    final uneditedCount = Sqflite.firstIntValue(
+      await db.rawQuery('SELECT COUNT(*) FROM correction_log WHERE was_edited = 0'),
+    ) ?? 0;
+    final pct = (uneditedCount / totalCount) * 100.0;
+    return {
+      'total': totalCount,
+      'exact_matches': uneditedCount,
+      'accuracy_percentage': double.parse(pct.toStringAsFixed(1)),
+    };
   }
 
   Future<int> insertItem(Item item) async {

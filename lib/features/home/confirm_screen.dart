@@ -6,10 +6,12 @@ import '../../data/parser.dart';
 
 class ConfirmScreen extends StatefulWidget {
   final ParsedEntry parsedEntry;
+  final String? audioPath;
 
   const ConfirmScreen({
     super.key,
     required this.parsedEntry,
+    this.audioPath,
   });
 
   @override
@@ -186,6 +188,8 @@ class _ConfirmScreenState extends State<ConfirmScreen> {
         qty: qty,
         amount: amount,
         rawText: widget.parsedEntry.rawText,
+        audioPath: widget.audioPath,
+        parsedEntry: widget.parsedEntry,
       );
 
       if (mounted) {
@@ -222,6 +226,7 @@ class _ConfirmScreenState extends State<ConfirmScreen> {
   Widget build(BuildContext context) {
     final provider = context.watch<KiranaProvider>();
     final items = provider.items;
+    final customers = provider.customers;
 
     // Match item by id or fallback if item was parsed by name
     if (_selectedItemId == null && widget.parsedEntry.itemName != null) {
@@ -361,27 +366,47 @@ class _ConfirmScreenState extends State<ConfirmScreen> {
                   ],
                 ),
                 const SizedBox(height: 6),
-                TextFormField(
-                  controller: _customerController,
-                  style: const TextStyle(fontSize: 18),
-                  decoration: InputDecoration(
-                    hintText: 'Customer name',
-                    errorText: !_isCustomerValid() ? 'Customer is required' : null,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(
-                        color: !_isCustomerValid() ? Colors.red : Colors.grey,
+                Autocomplete<String>(
+                  initialValue: TextEditingValue(text: _customerController.text),
+                  optionsBuilder: (TextEditingValue textEditingValue) {
+                    final query = textEditingValue.text.trim().toLowerCase();
+                    final names = customers.map((c) => c.name).toList();
+                    if (query.isEmpty) return const Iterable<String>.empty();
+                    return names.where((name) => name.toLowerCase().contains(query));
+                  },
+                  onSelected: (String selection) {
+                    _customerController.text = selection;
+                  },
+                  fieldViewBuilder: (context, fieldTextEditingController, focusNode, onFieldSubmitted) {
+                    fieldTextEditingController.addListener(() {
+                      if (_customerController.text != fieldTextEditingController.text) {
+                        _customerController.text = fieldTextEditingController.text;
+                      }
+                    });
+                    return TextFormField(
+                      controller: fieldTextEditingController,
+                      focusNode: focusNode,
+                      style: const TextStyle(fontSize: 18),
+                      decoration: InputDecoration(
+                        hintText: 'Customer name (రమేష్, Suresh...)',
+                        errorText: !_isCustomerValid() ? 'Customer is required' : null,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(
+                            color: !_isCustomerValid() ? Colors.red : Colors.grey,
+                          ),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(
+                            color: !_isCustomerValid() ? Colors.red : Colors.grey.shade400,
+                            width: !_isCustomerValid() ? 2.0 : 1.0,
+                          ),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                       ),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(
-                        color: !_isCustomerValid() ? Colors.red : Colors.grey.shade400,
-                        width: !_isCustomerValid() ? 2.0 : 1.0,
-                      ),
-                    ),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                  ),
+                    );
+                  },
                 ),
                 const SizedBox(height: 18),
               ],
