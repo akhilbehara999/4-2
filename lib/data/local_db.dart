@@ -5,6 +5,7 @@ import 'package:sqflite/sqflite.dart';
 import '../core/notifications.dart';
 import 'analytics.dart';
 import 'models.dart';
+import 'parser.dart';
 import 'stock_engine.dart';
 
 class LocalDb {
@@ -140,17 +141,21 @@ class LocalDb {
 
       if (customerName != null && customerName.trim().isNotEmpty) {
         final cleanCustName = customerName.trim();
-        final existingCust = await txn.query(
-          'customer',
-          where: 'LOWER(name) = ?',
-          whereArgs: [cleanCustName.toLowerCase()],
-          limit: 1,
-        );
+        final allCustomers = await txn.query('customer');
+        Map<String, dynamic>? matchedRow;
+
+        for (final row in allCustomers) {
+          final rowName = (row['name'] as String?) ?? '';
+          if (areSameCustomer(cleanCustName, rowName)) {
+            matchedRow = row;
+            break;
+          }
+        }
 
         double balanceDue = 0.0;
-        if (existingCust.isNotEmpty) {
-          customerId = existingCust.first['id'] as int;
-          balanceDue = (existingCust.first['balance_due'] as num?)?.toDouble() ?? 0.0;
+        if (matchedRow != null) {
+          customerId = matchedRow['id'] as int;
+          balanceDue = (matchedRow['balance_due'] as num?)?.toDouble() ?? 0.0;
         } else {
           customerId = await txn.insert('customer', {
             'name': cleanCustName,
@@ -239,12 +244,26 @@ class LocalDb {
 
   Future<int> updateItem(Item item) async {
     final db = await database;
-    return await db.update(
+    final oldItem = item.id != null ? await getItem(item.id!) : null;
+    final res = await db.update(
       'item',
       item.toMap(),
       where: 'id = ?',
       whereArgs: [item.id],
     );
+
+    // If stock count was modified by hand, write a stock_log audit row
+    if (oldItem != null && item.id != null && item.currentStock != oldItem.currentStock) {
+      final change = item.currentStock - oldItem.currentStock;
+      await db.insert('stock_log', {
+        'item_id': item.id,
+        'change': change,
+        'reason': 'recount',
+        'created_at': DateTime.now().toIso8601String(),
+      });
+    }
+
+    return res;
   }
 
   Future<Item?> getItem(int id) async {
@@ -473,13 +492,17 @@ class LocalDb {
     final random = Random(42);
     final now = DateTime.now();
 
-    // Ensure we have customers
+    // Ensure we have customers (prevent duplicates if single-script names exist)
     final customerNames = ['Ramesh (రామేష్)', 'Suresh (సురేష్)', 'Lakshmi (లక్ష్మి)', 'Venkat (వెంకట్)', 'Anitha (అనిత)'];
     final customerIds = <int>[];
+    final existingCusts = await db.query('customer');
+
     for (final name in customerNames) {
-      final rows = await db.query('customer', where: 'name = ?', whereArgs: [name], limit: 1);
-      if (rows.isNotEmpty) {
-        customerIds.add(rows.first['id'] as int);
+      final match = existingCusts
+          .where((row) => areSameCustomer(name, (row['name'] as String?) ?? ''))
+          .firstOrNull;
+      if (match != null) {
+        customerIds.add(match['id'] as int);
       } else {
         final id = await db.insert('customer', {'name': name, 'balance_due': 0.0});
         customerIds.add(id);

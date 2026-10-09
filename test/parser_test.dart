@@ -220,5 +220,47 @@ void main() {
       expect(res.unit, 'kg');
       expect(res.amount, 25.0);
     });
+
+    test('17. areSameCustomer detects identical customers across Telugu variants and English', () {
+      expect(areSameCustomer('Ramesh (రామేష్)', 'Ramesh'), isTrue);
+      expect(areSameCustomer('Ramesh (రామేష్)', 'రామేష్'), isTrue);
+      expect(areSameCustomer('Ramesh (రామేష్)', 'రమేష్'), isTrue);
+      expect(areSameCustomer('Ramesh', 'రమేష్'), isTrue);
+      expect(areSameCustomer('రామేష్', 'రమేష్'), isTrue);
+      expect(areSameCustomer('Suresh (సురేష్)', 'Suresh'), isTrue);
+      expect(areSameCustomer('Ramesh', 'Suresh'), isFalse);
+    });
+
+    test('18. Parser resolves Telugu variant "రమేష్" to existing customer "Ramesh (రామేష్)"', () {
+      final bilingualCustomers = [
+        Customer(id: 1, name: 'Ramesh (రామేష్)', balanceDue: 0),
+        Customer(id: 2, name: 'Suresh (సురేష్)', balanceDue: 0),
+      ];
+      final res = parse(
+        'రమేష్ కి 5 kg biyyam 250 rs',
+        sampleItems,
+        bilingualCustomers,
+      );
+      expect(res.type, 'credit_sale');
+      expect(res.customerName, 'Ramesh (రామేష్)');
+      expect(res.itemName, 'Rice');
+      expect(res.qty, 5.0);
+      expect(res.amount, 250.0);
+    });
+
+    test('19. Parser resolves English "Ramesh" to existing customer "Ramesh (రామేష్)"', () {
+      final bilingualCustomers = [
+        Customer(id: 1, name: 'Ramesh (రామేష్)', balanceDue: 0),
+        Customer(id: 2, name: 'Suresh (సురేష్)', balanceDue: 0),
+      ];
+      final res = parse(
+        'Ramesh ki 5 kg biyyam 250 rs',
+        sampleItems,
+        bilingualCustomers,
+      );
+      expect(res.type, 'credit_sale');
+      expect(res.customerName, 'Ramesh (రామేష్)');
+      expect(res.itemName, 'Rice');
+    });
   });
 }

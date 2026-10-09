@@ -111,10 +111,78 @@ bool containsWord(String text, String word) {
   return RegExp(pattern, caseSensitive: false).hasMatch(text);
 }
 
-/// Matches customer name against text using whole-word boundaries.
-/// Handles customer names with parentheses (e.g. "Ramesh (రామేష్)"),
-/// and common Telugu honorific/case suffixes (ki, ku, gariki, కి, కు, గారికి).
-bool matchesCustomer(String text, String customerName) {
+/// Known bilingual equivalences and spelling variants for Kirana customer names.
+const Map<String, List<String>> KNOWN_CUSTOMER_VARIANTS = {
+  'ramesh': ['ramesh', 'రామేష్', 'రమేష్'],
+  'suresh': ['suresh', 'సురేష్', 'సూరేష్'],
+  'lakshmi': ['lakshmi', 'లక్ష్మి', 'లక్ష్మీ', 'laxmi'],
+  'venkat': ['venkat', 'వెంకట్', 'వెంకటేష్', 'venkatesh'],
+  'anitha': ['anitha', 'anita', 'అనిత', 'అనీత'],
+  'mahesh': ['mahesh', 'మహేష్'],
+  'rajesh': ['rajesh', 'రాజేష్', 'రజేష్'],
+  'naresh': ['naresh', 'నరేష్'],
+  'raju': ['raju', 'రాజు'],
+  'ravi': ['ravi', 'రవి'],
+  'prasad': ['prasad', 'ప్రసాద్'],
+  'kumar': ['kumar', 'కుమార్'],
+  'srinivas': ['srinivas', 'శ్రీనివాస్', 'శీను', 'srinu'],
+  'satish': ['satish', 'సతీష్'],
+  'krishna': ['krishna', 'కృష్ణ'],
+  'nagaraju': ['nagaraju', 'నాగరాజు'],
+  'siva': ['siva', 'shiva', 'శివ'],
+  'sai': ['sai', 'సాయి'],
+  'ramu': ['ramu', 'రాము'],
+};
+
+/// Determines whether two customer names represent the same person
+/// (e.g. "Ramesh (రామేష్)" and "Ramesh", or "రమేష్" and "Ramesh").
+bool areSameCustomer(String nameA, String nameB) {
+  final cleanA = nameA.trim().toLowerCase();
+  final cleanB = nameB.trim().toLowerCase();
+  if (cleanA.isEmpty || cleanB.isEmpty) return false;
+  if (cleanA == cleanB) return true;
+
+  // Split tokens for nameA and nameB (e.g. "Ramesh (రామేష్)" -> ["ramesh", "రామేష్"])
+  final tokensA = nameA
+      .split(RegExp(r'[()/,]+'))
+      .map((t) => t.trim().toLowerCase())
+      .where((t) => t.length >= 2)
+      .toSet();
+  final tokensB = nameB
+      .split(RegExp(r'[()/,]+'))
+      .map((t) => t.trim().toLowerCase())
+      .where((t) => t.length >= 2)
+      .toSet();
+
+  // If any direct token overlaps
+  if (tokensA.intersection(tokensB).isNotEmpty) return true;
+
+  // Expand with KNOWN_CUSTOMER_VARIANTS
+  String? canonicalOf(String token) {
+    for (final entry in KNOWN_CUSTOMER_VARIANTS.entries) {
+      if (entry.key == token || entry.value.any((v) => v.toLowerCase() == token)) {
+        return entry.key;
+      }
+    }
+    return null;
+  }
+
+  for (final tA in tokensA) {
+    final canonA = canonicalOf(tA);
+    if (canonA != null) {
+      for (final tB in tokensB) {
+        if (canonicalOf(tB) == canonA) {
+          return true;
+        }
+      }
+    }
+  }
+
+  return false;
+}
+
+/// Matches customer name directly using exact name or unparenthesized tokens without variant expansion.
+bool matchesCustomerDirect(String text, String customerName) {
   if (containsWord(text, customerName)) return true;
   final suffixes = ['ki', 'ku', 'gariki', 'కి', 'కు', 'గారికి'];
   final nameTokens = customerName
@@ -130,6 +198,42 @@ bool matchesCustomer(String text, String customerName) {
     }
   }
   return false;
+}
+
+/// Matches customer name against text using known spelling/language variants.
+bool matchesCustomerVariant(String text, String customerName) {
+  final suffixes = ['ki', 'ku', 'gariki', 'కి', 'కు', 'గారికి'];
+  final nameTokens = customerName
+      .split(RegExp(r'[()/,]+'))
+      .map((t) => t.trim())
+      .where((t) => t.length >= 2);
+
+  final allVariants = <String>{};
+  for (final token in nameTokens) {
+    final lower = token.toLowerCase();
+    for (final entry in KNOWN_CUSTOMER_VARIANTS.entries) {
+      if (entry.key == lower || entry.value.any((v) => v.toLowerCase() == lower)) {
+        allVariants.addAll(entry.value);
+      }
+    }
+  }
+
+  for (final token in allVariants) {
+    if (containsWord(text, token)) return true;
+    for (final s in suffixes) {
+      if (containsWord(text, '$token$s') || containsWord(text, '$token $s')) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+/// Matches customer name against text using whole-word boundaries.
+/// Handles customer names with parentheses (e.g. "Ramesh (రామేష్)"),
+/// bilingual variants (రమేష్ vs Ramesh), and common Telugu honorific/case suffixes.
+bool matchesCustomer(String text, String customerName) {
+  return matchesCustomerDirect(text, customerName) || matchesCustomerVariant(text, customerName);
 }
 
 class ParsedEntry {
@@ -179,14 +283,22 @@ ParsedEntry parse(
     return ParsedEntry(rawText: text);
   }
 
-  // 1. Resolve Customer (match whole words only, longest customer name first)
+  // 1. Resolve Customer (match whole words only, direct matches first, then variants)
   String? customerName;
   final sortedCustomers = List<Customer>.from(customers)
     ..sort((a, b) => b.name.length.compareTo(a.name.length));
   for (final c in sortedCustomers) {
-    if (matchesCustomer(cleanText, c.name)) {
+    if (matchesCustomerDirect(cleanText, c.name)) {
       customerName = c.name;
       break;
+    }
+  }
+  if (customerName == null) {
+    for (final c in sortedCustomers) {
+      if (matchesCustomer(cleanText, c.name)) {
+        customerName = c.name;
+        break;
+      }
     }
   }
 

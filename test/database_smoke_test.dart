@@ -12,6 +12,7 @@ void main() {
     databaseFactory = sqfliteDatabaseFactoryDefault;
 
     final List<Map<String, Object?>> storedItems = [];
+    final List<Map<String, Object?>> stockLogs = [];
     const channel = MethodChannel('com.tekartik.sqflite');
 
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
@@ -24,6 +25,16 @@ void main() {
         case 'execute':
           return null;
         case 'insert':
+          final sql = (call.arguments as Map?)?['sql'] as String? ?? '';
+          final args = (call.arguments as Map?)?['arguments'] as List?;
+          if (sql.contains('stock_log')) {
+            stockLogs.add({
+              'item_id': args?[0],
+              'change': args?[1],
+              'reason': args?[2],
+            });
+            return 1;
+          }
           final itemData = {
             'id': 1,
             'name_te': 'ఉల్లిపాయలు',
@@ -35,6 +46,8 @@ void main() {
             'sell_price': 30.0,
           };
           storedItems.add(itemData);
+          return 1;
+        case 'update':
           return 1;
         case 'query':
           return storedItems;
@@ -69,6 +82,23 @@ void main() {
     expect(retrieved.alertDays, 3);
     expect(retrieved.costPrice, 25.0);
     expect(retrieved.sellPrice, 30.0);
+
+    // Editing stock by hand writes a stock_log row with reason: 'recount'
+    final editedItem = Item(
+      id: retrieved.id,
+      nameTe: retrieved.nameTe,
+      nameEn: retrieved.nameEn,
+      unit: retrieved.unit,
+      currentStock: 20.0,
+      alertDays: retrieved.alertDays,
+      costPrice: retrieved.costPrice,
+      sellPrice: retrieved.sellPrice,
+    );
+    await localDb.updateItem(editedItem);
+    expect(stockLogs.isNotEmpty, isTrue);
+    expect(stockLogs.last['item_id'], 1);
+    expect(stockLogs.last['change'], 4.5);
+    expect(stockLogs.last['reason'], 'recount');
   });
 
   test('Models serialization unit tests', () {
