@@ -23,6 +23,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final VoiceService _voiceService = VoiceService();
   final TextEditingController _typeController = TextEditingController();
   bool _isListening = false;
+  bool _handled = false;
   String _partialText = '';
   String _currentLocale = 'te_IN';
 
@@ -50,14 +51,16 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _toggleListening() async {
     if (_isListening) {
-      await _voiceService.stop();
       setState(() {
         _isListening = false;
       });
-      if (_partialText.trim().isNotEmpty) {
+      await _voiceService.stop();
+      if (!_handled && _partialText.trim().isNotEmpty) {
+        _handled = true;
         _processText(_partialText);
       }
     } else {
+      _handled = false;
       setState(() {
         _partialText = '';
         _isListening = true;
@@ -70,12 +73,31 @@ class _HomeScreenState extends State<HomeScreen> {
               _partialText = text;
               _currentLocale = _voiceService.activeLocaleId;
             });
-            if (isFinal && text.trim().isNotEmpty) {
+            if (isFinal && text.trim().isNotEmpty && !_handled) {
+              _handled = true;
               setState(() {
                 _isListening = false;
               });
               _processText(text);
             }
+          }
+        },
+        onDone: () {
+          if (mounted) {
+            setState(() {
+              _isListening = false;
+            });
+            if (!_handled && _partialText.trim().isNotEmpty) {
+              _handled = true;
+              _processText(_partialText);
+            }
+          }
+        },
+        onError: (err) {
+          if (mounted) {
+            setState(() {
+              _isListening = false;
+            });
           }
         },
       );
@@ -424,6 +446,11 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                       onSubmitted: (val) {
                         if (val.trim().isNotEmpty) {
+                          if (_isListening) {
+                            _voiceService.stop();
+                            setState(() => _isListening = false);
+                          }
+                          _handled = true;
                           _processText(val.trim());
                           _typeController.clear();
                         }
@@ -438,6 +465,11 @@ class _HomeScreenState extends State<HomeScreen> {
                     onPressed: () {
                       final text = _typeController.text.trim();
                       if (text.isNotEmpty) {
+                        if (_isListening) {
+                          _voiceService.stop();
+                          setState(() => _isListening = false);
+                        }
+                        _handled = true;
                         _processText(text);
                         _typeController.clear();
                       }

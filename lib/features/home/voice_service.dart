@@ -5,10 +5,14 @@ import 'package:speech_to_text/speech_to_text.dart';
 class VoiceService {
   final SpeechToText _speech = SpeechToText();
   bool _isInitialized = false;
+  bool _isListening = false;
   String _activeLocaleId = 'te_IN';
 
+  VoidCallback? _onDone;
+  void Function(dynamic error)? _onError;
+
   String get activeLocaleId => _activeLocaleId;
-  bool get isListening => _speech.isListening;
+  bool get isListening => _isListening;
   bool get isAvailable => _isInitialized;
 
   Future<bool> init() async {
@@ -28,8 +32,18 @@ class VoiceService {
 
     try {
       _isInitialized = await _speech.initialize(
-        onError: (err) => debugPrint('SpeechToText error: $err'),
-        onStatus: (status) => debugPrint('SpeechToText status: $status'),
+        onError: (err) {
+          debugPrint('SpeechToText error: $err');
+          _isListening = false;
+          _onError?.call(err);
+        },
+        onStatus: (status) {
+          debugPrint('SpeechToText status: $status');
+          if (status == 'done' || status == 'notListening') {
+            _isListening = false;
+            _onDone?.call();
+          }
+        },
       );
 
       if (_isInitialized) {
@@ -51,19 +65,27 @@ class VoiceService {
       return _isInitialized;
     } catch (e) {
       debugPrint('VoiceService init exception: $e');
+      _isListening = false;
       return false;
     }
   }
 
   Future<bool> start({
     required void Function(String text, bool isFinal) onResult,
+    VoidCallback? onDone,
+    void Function(dynamic error)? onError,
   }) async {
+    _onDone = onDone;
+    _onError = onError;
+
     final ok = await init();
     if (!ok) {
+      _isListening = false;
       return false;
     }
 
     try {
+      _isListening = true;
       await _speech.listen(
         // ignore: deprecated_member_use
         localeId: _activeLocaleId,
@@ -74,11 +96,13 @@ class VoiceService {
       return true;
     } catch (e) {
       debugPrint('Speech listen error: $e');
+      _isListening = false;
       return false;
     }
   }
 
   Future<void> stop() async {
+    _isListening = false;
     try {
       if (_speech.isListening) {
         await _speech.stop();
