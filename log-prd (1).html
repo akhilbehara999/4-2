@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LOG: Voice Notebook for Telugu Shopkeepers (PRD)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700&family=Noto+Sans+Telugu:wght@400;600&family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f6f8fb;--surface:#fff;--ink:#16213a;--mute:#56607a;--rule:#d5dbe7;--line:#e4e9f2;--accent:#0b6e5f;--accent-soft:#dff3ee;--warn:#b4301f;--warn-soft:#fbe6e2;--mark:#f2b53a;
+--head:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;--body:"Source Sans 3","Noto Sans Telugu","Segoe UI",system-ui,sans-serif}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#0f1524;--surface:#172036;--ink:#e8edf8;--mute:#9aa5c0;--rule:#2b3856;--line:#222d48;--accent:#4fd1b5;--accent-soft:#143a3a;--warn:#ff8b78;--warn-soft:#3b1d1d;--mark:#e8a923}}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:64px}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.6 var(--body);padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+h1,h2,h3{font-family:var(--head);line-height:1.15;margin:0}
+h2{font-size:1.7rem;margin:0 0 .6rem}
+h3{font-size:1.15rem;margin:1.4rem 0 .4rem}
+p{margin:.5rem 0;max-width:72ch}
+a{color:var(--accent)}
+nav{position:sticky;top:0;z-index:5;background:var(--surface);border-bottom:1px solid var(--rule);display:flex;gap:4px;overflow-x:auto;padding:8px 14px;white-space:nowrap;scrollbar-width:none}
+nav a{padding:6px 12px;border-radius:999px;text-decoration:none;color:var(--mute);font-size:.92rem}
+nav a:hover,nav a:focus-visible{background:var(--accent-soft);color:var(--accent);outline:none}
+header{padding:44px 18px 28px;max-width:980px;margin:0 auto}
+header h1{font-size:clamp(2rem,6vw,3.2rem);max-width:20ch}
+header p.sub{font-size:1.15rem;color:var(--mute);margin-top:12px}
+.facts{display:flex;flex-wrap:wrap;gap:6px 22px;margin:18px 0 0;padding:0;list-style:none;color:var(--mute);font-size:.95rem}
+.facts b{color:var(--ink)}
+.ledger{margin-top:26px;border:1px solid var(--rule);background:var(--surface);border-radius:6px;overflow:hidden;background-image:linear-gradient(var(--line) 1px,transparent 1px);background-size:100% 34px}
+.ledger .say{padding:14px 18px;border-bottom:2px solid var(--mark);font-size:1.25rem;background:var(--surface)}
+.ledger .say small{display:block;color:var(--mute);font-size:.9rem}
+.ledger table{margin:0;border:0;background:transparent}
+main{max-width:980px;margin:0 auto;padding:0 18px 60px}
+section{padding:34px 0 8px;border-top:1px solid var(--rule);margin-top:26px}
+.tw{overflow-x:auto;margin:12px 0;border:1px solid var(--rule);border-radius:6px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;min-width:520px;font-size:.95rem}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-family:var(--head);font-weight:500;background:var(--accent-soft);color:var(--ink)}
+tr:last-child td{border-bottom:0}
+ul,ol{padding-left:1.2rem;margin:.4rem 0}
+li{margin:.25rem 0;max-width:72ch}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media(max-width:700px){.pair{grid-template-columns:1fr}}
+.problem{border-left:4px solid var(--warn);background:var(--warn-soft);padding:6px 16px;border-radius:0 6px 6px 0}
+.solution{border-left:4px solid var(--accent);background:var(--accent-soft);padding:6px 16px;border-radius:0 6px 6px 0}
+.tag{display:inline-block;padding:1px 9px;border-radius:999px;font-size:.8rem;background:var(--accent-soft);color:var(--accent);font-weight:600}
+.tag.later{background:var(--line);color:var(--mute)}
+.tag.done{background:var(--accent);color:var(--surface)}
+.flow{list-style:none;padding:0;counter-reset:s;border-left:2px solid var(--rule);margin:14px 0 14px 8px}
+.flow li{counter-increment:s;padding:2px 0 12px 22px;position:relative}
+.flow li::before{content:counter(s);position:absolute;left:-13px;top:2px;width:24px;height:24px;border-radius:50%;background:var(--accent);color:var(--surface);font:600 .8rem/24px var(--head);text-align:center}
+.svgw{overflow-x:auto;border:1px solid var(--rule);border-radius:6px;background:var(--surface);margin:12px 0}
+svg{display:block;min-width:660px;width:100%;height:auto}
+svg text{font-family:var(--body);fill:var(--ink)}
+.bx{fill:var(--surface);stroke:var(--rule);stroke-width:1.5}
+.bx.a{fill:var(--accent-soft);stroke:var(--accent)}
+.ar{stroke:var(--mute);stroke-width:1.6;fill:none;marker-end:url(#h)}
+code{background:var(--line);padding:1px 6px;border-radius:4px;font-size:.9em}
+.note{border:1px solid var(--rule);border-left:4px solid var(--mark);background:var(--surface);padding:6px 14px;border-radius:0 6px 6px 0;margin:12px 0}
+footer{text-align:center;color:var(--mute);font-size:.9rem;padding:24px 18px 40px}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<nav aria-label="Sections">
+<a href="#problem">Problem</a><a href="#name">Name</a><a href="#users">Users</a><a href="#features">Features</a><a href="#flow">How it works</a><a href="#arch">Architecture</a><a href="#stack">Tech stack</a><a href="#ml">ML and AI</a><a href="#data">Data</a><a href="#screens">Screens</a><a href="#nfr">Requirements</a><a href="#eval">Evaluation</a><a href="#plan">Timeline</a><a href="#risks">Risks</a><a href="#viva">Viva Q&amp;A</a>
+</nav>
+
+<header>
+<h1>LOG: Voice Notebook for Telugu Shopkeepers</h1>
+<p class="sub">We Listen · Organise · Grow. An offline, voice-first Flutter app that turns spoken Telugu sales, credit and stock updates into records, alerts and profit insights, with all analysis running on the phone.</p>
+<ul class="facts">
+<li><b>Type:</b> Final-year (4-2) project</li>
+<li><b>Domains:</b> Mobile, ML, AI, Data Analytics</li>
+<li><b>Language:</b> Telugu</li>
+<li><b>Works:</b> offline first, on-device AI</li>
+</ul>
+<div class="ledger" aria-label="Example of voice to record">
+<div class="say">రామేష్‌కి 5 కిలోల బియ్యం అప్పు ఇచ్చాను, 300 రూపాయలు<small>The shopkeeper says this. LOG saves the row below.</small></div>
+<div class="tw" style="border:0;border-radius:0;background:transparent"><table><tr><th>Customer</th><th>Item</th><th>Qty</th><th>Amount</th><th>Type</th><th>Stock left</th></tr><tr><td>Ramesh</td><td>Rice</td><td>5 kg</td><td>₹300</td><td>Credit (udhar)</td><td>45 kg</td></tr></table></div>
+</div>
+</header>
+
+<main>
+
+<section id="problem">
+<h2>Problem and solution</h2>
+<div class="pair">
+<div class="problem"><h3>The problem</h3>
+<ul>
+<li>Small kirana and vegetable shop owners record sales and udhar in paper notebooks or memory.</li>
+<li>Credit dues get forgotten or disputed, so money is lost.</li>
+<li>They do not know real daily profit or which items earn the most.</li>
+<li>Stock runs out without warning, so sales are lost.</li>
+<li>Existing apps need typing, English and steady internet, which many owners do not have.</li>
+</ul></div>
+<div class="solution"><h3>The solution</h3>
+<ul>
+<li>Speak the entry in Telugu. No typing needed.</li>
+<li>LOG extracts customer, item, quantity, amount and type automatically.</li>
+<li>Everything, including analysis and the AI assistant, runs on the phone with no internet.</li>
+<li>Stock updates from the same voice entries, and alerts arrive before an item runs out.</li>
+<li>An on-device assistant answers questions like "Who owes me the most?" in Telugu.</li>
+</ul></div>
+</div>
+<h3>Objectives</h3>
+<ul>
+<li>Record a transaction in under 10 seconds by voice.</li>
+<li>Reach at least 85% accuracy on extracting item, quantity, amount and customer.</li>
+<li>Warn the owner at least 1 to 2 days before a tracked item runs out.</li>
+<li>Show profit, top items and outstanding credit in one simple dashboard.</li>
+</ul>
+<h3>Existing solutions and the gap</h3>
+<p>Khata apps such as OkCredit and Khatabook handle credit but are typing based. Voice ledgers exist, but mostly for Hindi and often depend on cloud speech or language models. LOG targets the gap: a Telugu-first notebook that works fully offline and combines the credit ledger, stock prediction and an on-device assistant.</p>
+</section>
+
+<section id="name">
+<h2>About the name</h2>
+<p><b>LOG</b> works as a notebook (shopkeepers "log" every sale) and as an acronym that follows the user's flow.</p>
+<div class="tw"><table>
+<tr><th>Letter</th><th>Meaning</th><th>What it covers in the app</th></tr>
+<tr><td>L</td><td>We Listen</td><td>Voice entry, Telugu speech-to-text, confirm screen</td></tr>
+<tr><td>O</td><td>Organise</td><td>Parsed records, credit ledger, stock tracking</td></tr>
+<tr><td>G</td><td>Grow</td><td>Dashboard, profit insights, stock alerts, assistant</td></tr>
+</table></div>
+</section>
+
+<section id="users">
+<h2>Target users</h2>
+<div class="tw"><table>
+<tr><th>User</th><th>Profile</th><th>Main need</th></tr>
+<tr><td>Primary: kirana shop owner</td><td>Age 30 to 60, Telugu speaker, basic smartphone, limited English, patchy internet</td><td>Quick entry, credit tracking, know what to restock</td></tr>
+<tr><td>Secondary: vegetable or tea stall owner</td><td>Many small sales per day, little time</td><td>Fast one-line entries, daily profit</td></tr>
+<tr><td>Secondary: shop helper or family member</td><td>Shares the phone or tablet</td><td>Simple entry, no setup knowledge</td></tr>
+</table></div>
+<h3>Scope</h3>
+<p><b>In scope:</b> voice entry, Telugu NLP, offline storage, stock tracking and alerts, credit ledger, on-phone analytics dashboard, on-device Telugu assistant, Supabase backup.</p>
+<p><b>Out of scope (version 1):</b> GST billing, payment gateway, barcode inventory, multi-shop chains, iOS.</p>
+</section>
+
+<section id="features">
+<h2>Features</h2>
+<div class="tw"><table>
+<tr><th>Feature</th><th>Description</th><th>Phase</th></tr>
+<tr><td>Voice entry</td><td>Tap the mic, speak a sale, credit, payment received, restock or expense. A type-instead box is the fallback.</td><td><span class="tag">MVP</span></td></tr>
+<tr><td>Confirm screen</td><td>Shows the understood entry in big text. Owner confirms or edits any field before saving.</td><td><span class="tag">MVP</span></td></tr>
+<tr><td>Offline database</td><td>All data stored on the phone (SQLite), no internet needed</td><td><span class="tag">MVP</span></td></tr>
+<tr><td>Credit ledger</td><td>Per-customer balance, history, "Mark paid" with partial payments, total outstanding</td><td><span class="tag">MVP</span></td></tr>
+<tr><td>Auto stock tracking</td><td>Each sale reduces stock, each restock adds to it</td><td><span class="tag">MVP</span></td></tr>
+<tr><td>Stock-out alerts</td><td>Telugu notification with predicted days left, plus a colour-coded stock list</td><td><span class="tag">MVP</span></td></tr>
+<tr><td>Dashboard</td><td>Today, 7-day and 30-day profit, top and slow items, credit due, charts</td><td><span class="tag">MVP</span></td></tr>
+<tr><td>Weekly stock check</td><td>App asks "Biyyam 12 kilo undha?" to correct drift</td><td><span class="tag">MVP</span></td></tr>
+<tr><td>Edit and undo entries</td><td>Fix or delete a saved entry. Stock and balances are reversed automatically.</td><td><span class="tag">MVP</span></td></tr>
+<tr><td>Correction log</td><td>Stores parsed vs final values to measure real extraction accuracy</td><td><span class="tag">MVP</span></td></tr>
+<tr><td>Supabase backup and sync</td><td>Unsynced rows upload in the background when online</td><td><span class="tag">MVP</span></td></tr>
+<tr><td>On-device Telugu assistant</td><td>Ask questions by voice or text. A ~2B local model answers from shop data.</td><td><span class="tag">Phase 2</span></td></tr>
+<tr><td>Restock suggestions</td><td>Weekly list of what to buy and how much</td><td><span class="tag">Phase 2</span></td></tr>
+<tr><td>WhatsApp reminder to customer</td><td>One tap to remind a customer of their due</td><td><span class="tag later">Future</span></td></tr>
+<tr><td>Festival demand forecast</td><td>Predict spikes for Ugadi, Sankranti, Dasara</td><td><span class="tag later">Future</span></td></tr>
+</table></div>
+</section>
+
+<section id="flow">
+<h2>How it works</h2>
+<ol class="flow">
+<li><b>Setup (one time, 2 to 3 minutes).</b> The owner adds the top 15 to 20 items with opening stock, like "Biyyam 50 kilo undi".</li>
+<li><b>Speak.</b> The owner taps the mic and says a sale: "Ramesh ki 5 kilo biyyam udhar ichanu, 300 rupayalu".</li>
+<li><b>Transcribe.</b> An on-device Telugu speech recogniser converts the audio to text.</li>
+<li><b>Extract.</b> The Dart parser finds customer, item, quantity, amount and transaction type. If the amount is missing it is filled from quantity times sell price.</li>
+<li><b>Confirm.</b> LOG shows the parsed entry. One tap saves it. A wrong field can be corrected.</li>
+<li><b>Save.</b> The record goes into the local database. Stock and the customer's balance update instantly, and the correction log is written.</li>
+<li><b>Predict.</b> The stock engine estimates days left per item and fires a local notification if it falls below the limit.</li>
+<li><b>Analyse.</b> The dashboard and assistant query the local database. Nothing leaves the phone for analysis.</li>
+<li><b>Sync.</b> When internet is available, unsynced rows back up to Supabase.</li>
+</ol>
+<h3>Supported transaction types</h3>
+<ul>
+<li><b>Cash sale:</b> "2 kilo pancharaa ammanu, 90 rupayalu"</li>
+<li><b>Credit sale:</b> "Lakshmi ki oka litre nune udhar"</li>
+<li><b>Payment received:</b> "Ramesh 200 rupayalu icchadu"</li>
+<li><b>Restock:</b> "50 kilo biyyam techanu, 2000 rupayalu"</li>
+<li><b>Expense:</b> "Current bill 800 kattanu"</li>
+</ul>
+</section>
+
+<section id="arch">
+<h2>System architecture</h2>
+<p>The phone does all the work: speech, extraction, analytics and the AI assistant. Supabase is only used for sign-in and backup.</p>
+<div class="svgw"><svg viewBox="0 0 700 430" role="img" aria-label="Architecture diagram: Flutter app with voice input, speech to text, Dart parser, confirm screen, SQLite database, stock engine, alerts, dashboard and on-device assistant; sync layer; Supabase cloud with auth, Postgres and storage">
+<defs><marker id="h" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#56607a"/></marker></defs>
+<text x="12" y="20" font-size="14" font-weight="600">On the phone (Flutter, works offline)</text>
+<rect class="bx a" x="10" y="30" width="680" height="190" rx="8" style="fill:none"/>
+<rect class="bx" x="24" y="60" width="110" height="56" rx="6"/><text x="79" y="84" text-anchor="middle" font-size="13">Voice input</text><text x="79" y="102" text-anchor="middle" font-size="11">Flutter UI</text>
+<rect class="bx" x="164" y="60" width="110" height="56" rx="6"/><text x="219" y="84" text-anchor="middle" font-size="13">Speech to text</text><text x="219" y="102" text-anchor="middle" font-size="11">Telugu, on-device</text>
+<rect class="bx" x="304" y="60" width="110" height="56" rx="6"/><text x="359" y="84" text-anchor="middle" font-size="13">Dart parser</text><text x="359" y="102" text-anchor="middle" font-size="11">item, qty, amount</text>
+<rect class="bx" x="444" y="60" width="110" height="56" rx="6"/><text x="499" y="84" text-anchor="middle" font-size="13">Confirm screen</text><text x="499" y="102" text-anchor="middle" font-size="11">user verifies</text>
+<rect class="bx a" x="574" y="60" width="102" height="56" rx="6"/><text x="625" y="84" text-anchor="middle" font-size="13">SQLite</text><text x="625" y="102" text-anchor="middle" font-size="11">local database</text>
+<path class="ar" d="M134,88 H162"/><path class="ar" d="M274,88 H302"/><path class="ar" d="M414,88 H442"/><path class="ar" d="M554,88 H572"/>
+<rect class="bx" x="574" y="140" width="102" height="56" rx="6"/><text x="625" y="164" text-anchor="middle" font-size="13">Dashboard</text><text x="625" y="182" text-anchor="middle" font-size="11">SQL + charts</text>
+<rect class="bx" x="444" y="140" width="110" height="56" rx="6"/><text x="499" y="164" text-anchor="middle" font-size="13">Stock engine</text><text x="499" y="182" text-anchor="middle" font-size="11">days-left estimate</text>
+<rect class="bx" x="304" y="140" width="110" height="56" rx="6"/><text x="359" y="164" text-anchor="middle" font-size="13">Alerts</text><text x="359" y="182" text-anchor="middle" font-size="11">local notifications</text>
+<rect class="bx a" x="164" y="140" width="110" height="56" rx="6"/><text x="219" y="164" text-anchor="middle" font-size="13">AI assistant</text><text x="219" y="182" text-anchor="middle" font-size="11">~2B local model</text>
+<path class="ar" d="M625,116 V138"/><path class="ar" d="M444,168 H416"/><path class="ar" d="M304,168 H276"/>
+<rect class="bx" x="200" y="246" width="300" height="38" rx="6"/><text x="350" y="270" text-anchor="middle" font-size="13">Background sync when online (encrypted)</text>
+<path class="ar" d="M625,220 V233 H500 V244" style="marker-end:none"/><path class="ar" d="M350,284 V306"/>
+<text x="12" y="302" font-size="14" font-weight="600">Cloud (backup only)</text>
+<rect class="bx a" x="10" y="310" width="680" height="110" rx="8" style="fill:none"/>
+<rect class="bx" x="24" y="340" width="190" height="62" rx="6"/><text x="119" y="366" text-anchor="middle" font-size="13">Supabase Auth</text><text x="119" y="384" text-anchor="middle" font-size="11">phone OTP login</text>
+<rect class="bx" x="254" y="340" width="190" height="62" rx="6"/><text x="349" y="366" text-anchor="middle" font-size="13">Supabase Postgres</text><text x="349" y="384" text-anchor="middle" font-size="11">backup, row level security</text>
+<rect class="bx" x="484" y="340" width="192" height="62" rx="6"/><text x="580" y="366" text-anchor="middle" font-size="13">Supabase Storage</text><text x="580" y="384" text-anchor="middle" font-size="11">optional audio samples</text>
+<path class="ar" d="M214,371 H252"/><path class="ar" d="M444,371 H482"/>
+</svg></div>
+<h3>Layers in plain words</h3>
+<ul>
+<li><b>Presentation:</b> Flutter screens with large buttons, icons and Telugu text.</li>
+<li><b>Intelligence on device:</b> speech-to-text, entity extraction, the stock engine, analytics and the assistant all run locally.</li>
+<li><b>Data:</b> SQLite is the source of truth on the phone. Supabase Postgres holds the synced backup copy.</li>
+<li><b>Cloud:</b> only authentication, backup and optional storage. No cloud AI is needed.</li>
+</ul>
+</section>
+
+<section id="stack">
+<h2>Tech stack</h2>
+<div class="tw"><table>
+<tr><th>Area</th><th>Choice</th><th>Why</th></tr>
+<tr><td>App framework</td><td>Flutter + Dart (Material 3)</td><td>One codebase, fast UI, good for custom voice screens</td></tr>
+<tr><td>State management</td><td>Provider (Riverpod is an option)</td><td>Simple reactive state</td></tr>
+<tr><td>Local database</td><td>SQLite via <code>sqflite</code></td><td>Reliable offline storage; web build uses <code>sqflite_common_ffi_web</code></td></tr>
+<tr><td>Speech to text</td><td><code>speech_to_text</code> with the Android Telugu (te-IN) locale; Whisper tiny/base (whisper.cpp) or Vosk to compare</td><td>Start simple, then compare word error rate</td></tr>
+<tr><td>Text to speech</td><td><code>flutter_tts</code> (Android Telugu voice)</td><td>Voice confirmation and spoken answers</td></tr>
+<tr><td>NLP extraction</td><td>Rule-based Dart parser with Telugu and Romanized synonym dictionaries; small fine-tuned model (MuRIL or IndicBERT, TFLite) as an upgrade</td><td>Instant, offline, no cost per request</td></tr>
+<tr><td>Analytics</td><td>SQL aggregation on SQLite plus Dart, charts with <code>fl_chart</code></td><td>All analysis stays on the phone</td></tr>
+<tr><td>Stock prediction</td><td>14-day weighted moving average (last 7 days count double); exponential smoothing and weekday factors later</td><td>Simple, explainable, light</td></tr>
+<tr><td>AI assistant</td><td>~2B on-device model (Gemma 2B or Qwen2.5 1.5B, 4-bit) through <code>llama.cpp</code></td><td>Natural Telugu questions with no internet</td></tr>
+<tr><td>Backend</td><td>Supabase (Auth, Postgres, Storage) via <code>supabase_flutter</code></td><td>Quick setup for login and backup, row level security per shop</td></tr>
+<tr><td>Notifications</td><td><code>flutter_local_notifications</code>; <code>workmanager</code> for scheduled checks</td><td>Alerts work without internet</td></tr>
+<tr><td>Permissions</td><td><code>permission_handler</code></td><td>Microphone and notification permissions</td></tr>
+<tr><td>ML experiments</td><td>Google Colab, Python, pandas, scikit-learn</td><td>Evaluate word error rate, F1 and the predictor offline</td></tr>
+<tr><td>Tools</td><td>VS Code or Android Studio, Git, Postman, Figma</td><td>Standard workflow</td></tr>
+</table></div>
+</section>
+
+<section id="ml">
+<h2>ML and AI design</h2>
+
+<h3>1. Speech recognition</h3>
+<p>Convert Telugu audio to text on the phone. Shop vocabulary is small (item names, numbers, names of people), so accuracy improves with a custom word list and the confirm screen. Telugu recognition is the hardest part of the project. Compare 2 to 3 options (Android recogniser, Whisper, Vosk) and report the word error rate for each.</p>
+
+<h3>2. Entity extraction (NLP)</h3>
+<p>Read the text and fill a fixed structure.</p>
+<div class="tw"><table>
+<tr><th>Field</th><th>Example</th><th>Method</th></tr>
+<tr><td>customer</td><td>Ramesh</td><td>Known-name match, "ki / కి" suffix detection, spelling variants (Ramesh, రామేష్, రమేష్)</td></tr>
+<tr><td>item</td><td>Rice (biyyam)</td><td>Item list plus synonym dictionary in Telugu script and Romanized form</td></tr>
+<tr><td>quantity and unit</td><td>5 kg</td><td>Digits or Telugu number words (ఒక, రెండు, అర, పావు) with unit patterns; grams and ml convert to kg and litre</td></tr>
+<tr><td>amount</td><td>₹300</td><td>Digits or Telugu amount words; auto-filled from quantity times sell price when not spoken</td></tr>
+<tr><td>type</td><td>credit</td><td>Whole-word keywords: udhar, ichadu, techanu, ammanu, with fallback rules</td></tr>
+</table></div>
+<p>Plan: the rule-based parser is the first version and is covered by unit tests. Then collect recorded sentences and fine-tune a small model to handle free word order. Compare both on the same test set.</p>
+
+<h3>3. Stock-out prediction</h3>
+<ul>
+<li>Daily sales per item form a time series (cash and credit sales).</li>
+<li><code>avg = (2 × sales in last 7 days + sales in older days) / (2 × 7 + older days)</code>, over a window of up to 14 days.</li>
+<li><code>days_left = current_stock / avg</code>. At least 3 days of data are needed before predicting.</li>
+<li>Status: red if days left is at or below the alert limit (default 2 days), amber if within 2 more days, green otherwise, grey when data is insufficient.</li>
+<li>A weekly confirmation question corrects drift when the owner forgets an entry.</li>
+<li>Phase 2: add weekday, month and festival factors.</li>
+</ul>
+
+<h3>4. On-device AI assistant (~2B model)</h3>
+<p>A small model is unreliable at writing SQL or doing arithmetic, so the assistant is built in three steps:</p>
+<ol>
+<li><b>Understand:</b> the model maps the Telugu question to a fixed intent such as <code>top_debtors</code>, <code>low_stock</code>, <code>today_profit</code>, <code>best_selling_item</code> or <code>customer_balance</code>, with parameters.</li>
+<li><b>Query:</b> the app runs the matching SQLite query. The numbers come from the database, not from the model.</li>
+<li><b>Answer:</b> the model, or a Telugu template if the model is weak, phrases the result as a short Telugu answer.</li>
+</ol>
+<p>The assistant only reads this shop's data and never changes records. Example: "Evaru ekkuva baki undaru?" returns the top debtors from the ledger.</p>
+<div class="note"><b>Practical limits.</b> A 4-bit 2B model is about 1.2 to 1.5 GB and needs about 4 GB RAM. It is downloaded on first launch and kept optional, so 3 GB RAM phones still run all core features. Telugu quality of 2B models is limited, so test early and keep template answers as a fallback.</div>
+</section>
+
+<section id="data">
+<h2>Data</h2>
+<h3>Database tables (SQLite on the phone, mirrored in Supabase)</h3>
+<div class="tw"><table>
+<tr><th>Table</th><th>Key fields</th></tr>
+<tr><td>item</td><td>id, name_te, name_en, unit, current_stock, alert_days, cost_price, sell_price</td></tr>
+<tr><td>customer</td><td>id, name, phone (optional), balance_due</td></tr>
+<tr><td>txn</td><td>id, type, item_id, customer_id, qty, amount, raw_text, audio_path, created_at, synced</td></tr>
+<tr><td>stock_log</td><td>id, item_id, change, reason (sale, restock, recount, undo), created_at</td></tr>
+<tr><td>alert</td><td>id, item_id, predicted_days_left, sent_at, seen</td></tr>
+<tr><td>correction_log</td><td>id, txn_id, raw_text, parsed fields, final fields, was_edited, created_at</td></tr>
+</table></div>
+<h3>Data sources for ML</h3>
+<ul>
+<li><b>Voice sentences:</b> record 300 to 500 Telugu shop sentences from friends, family and 5 to 10 real shopkeepers in Srikakulam, with permission. Label each with the correct fields.</li>
+<li><b>Correction log:</b> every confirm and edit in the app becomes labelled data and a real accuracy measure.</li>
+<li><b>Public speech data:</b> Telugu speech corpora (for example Common Voice and AI4Bharat resources) to compare or fine-tune.</li>
+<li><b>Sales history:</b> data from pilot shops, plus a built-in 30-day synthetic demo generator (weekend peaks, restocks, credit and expenses) to test charts and the stock predictor.</li>
+</ul>
+<h3>Privacy</h3>
+<p>Data stays on the phone first, and analysis never leaves it. Supabase uses row level security so each shop sees only its own rows. Ask consent before uploading voice for research, and anonymize customer names in any dataset you share.</p>
+<h3>Analytics shown to the owner (computed on the phone)</h3>
+<ul>
+<li>Sales, expenses and estimated profit for today, 7 days and 30 days</li>
+<li>Top 5 selling items and slowest items</li>
+<li>Total credit outstanding and the top defaulters</li>
+<li>Daily sales trend chart</li>
+<li>Items likely to run out in the next 3 days</li>
+</ul>
+</section>
+
+<section id="screens">
+<h2>Screens</h2>
+<div class="tw"><table>
+<tr><th>Screen</th><th>What it shows</th></tr>
+<tr><td>Home</td><td>Big mic button, live transcript, type-instead box, low-stock banner, weekly stock check, last 10 entries</td></tr>
+<tr><td>Confirm entry</td><td>Parsed fields in large text, editable, Save and Cancel</td></tr>
+<tr><td>Udhar</td><td>Customer list with balances, search, history sheet, mark paid</td></tr>
+<tr><td>Stock</td><td>Items with quantity and days-left bar (red, amber, green, grey), add and edit item</td></tr>
+<tr><td>Dashboard</td><td>Period toggle, profit cards, charts, slow items, top debtors</td></tr>
+<tr><td>Ask</td><td>Voice or text question and Telugu answer from the on-device assistant (Phase 2)</td></tr>
+<tr><td>Settings</td><td>Backup, language, demo data and reset (debug builds)</td></tr>
+</table></div>
+<h3>Design rules for non-technical users</h3>
+<ul>
+<li>Large touch targets and high contrast.</li>
+<li>Telugu and English labels together. At most one main action per screen.</li>
+<li>Confirm screen before anything is saved, with undo after saving.</li>
+<li>Clear Telugu error messages, such as "Malli cheppandi" (please say it again).</li>
+</ul>
+</section>
+
+<section id="nfr">
+<h2>Requirements</h2>
+<h3>Functional</h3>
+<ul>
+<li>The system shall record a transaction from a spoken Telugu sentence.</li>
+<li>The system shall let the user confirm or correct before saving.</li>
+<li>The system shall update stock and customer balance after every saved transaction.</li>
+<li>The system shall send an alert when predicted days left is below the limit.</li>
+<li>The system shall work fully offline, including analytics and the assistant, and back up to Supabase when connected.</li>
+<li>The system shall answer questions about sales, stock and credit.</li>
+</ul>
+<h3>Non-functional</h3>
+<div class="tw"><table>
+<tr><th>Quality</th><th>Target</th></tr>
+<tr><td>Speed</td><td>Entry saved within 10 seconds of speaking</td></tr>
+<tr><td>Offline</td><td>All core features and analytics work with no internet</td></tr>
+<tr><td>Size</td><td>Base app small; the ~2B model (about 1.2 to 1.5 GB) is an optional download on first launch</td></tr>
+<tr><td>Devices</td><td>Android 8 and above; 3 GB RAM for core features, about 4 GB RAM for the assistant</td></tr>
+<tr><td>Accuracy</td><td>Extraction F1 of 85% or more on the test set</td></tr>
+<tr><td>Security</td><td>Encrypted sync, row level security, local data not shared without consent</td></tr>
+<tr><td>Usability</td><td>New user records first entry in under 2 minutes</td></tr>
+</table></div>
+</section>
+
+<section id="eval">
+<h2>Evaluation and testing</h2>
+<div class="tw"><table>
+<tr><th>What</th><th>Metric</th><th>Goal</th></tr>
+<tr><td>Speech recognition</td><td>Word error rate on shop sentences</td><td>Below 25%, improved with the custom word list</td></tr>
+<tr><td>Extraction</td><td>Precision, recall, F1 per field; share of entries saved without edits (correction log)</td><td>F1 of 85% or more</td></tr>
+<tr><td>Stock prediction</td><td>Mean absolute error of days left</td><td>Within 1 day for fast-moving items</td></tr>
+<tr><td>Alert usefulness</td><td>Alerts that came before a real stock-out</td><td>70% or more</td></tr>
+<tr><td>Usability</td><td>Task time and errors with 5 to 10 real shopkeepers</td><td>First entry in under 2 minutes</td></tr>
+<tr><td>Assistant</td><td>Correct answers on 30 test questions; response time on a mid-range phone</td><td>80% or more correct</td></tr>
+</table></div>
+<p>Automated tests already cover the parser (27 cases), the stock engine, database operations and the main UI flow. Add field testing in noisy shop conditions.</p>
+</section>
+
+<section id="plan">
+<h2>Timeline (12 weeks)</h2>
+<ol class="flow">
+<li><b>Weeks 1 to 2:</b> Visit shops, finalize the item list and sentence patterns, collect voice samples, set up the Flutter project and Supabase.</li>
+<li><b>Weeks 3 to 4:</b> Build the UI, SQLite database, ledger and stock screens with manual entry.</li>
+<li><b>Weeks 5 to 6:</b> Integrate speech-to-text, compare recognisers, and build the parser with the confirm screen.</li>
+<li><b>Weeks 7 to 8:</b> Add the stock engine, alerts, weekly check, and Supabase auth and sync.</li>
+<li><b>Weeks 9 to 10:</b> Build the analytics dashboard, then the on-device assistant. Fine-tune the NLP model if time allows.</li>
+<li><b>Week 11:</b> Pilot test with real shopkeepers, collect feedback and measure metrics.</li>
+<li><b>Week 12:</b> Fix issues, write the report, prepare the demo and slides.</li>
+</ol>
+</section>
+
+<section id="risks">
+<h2>Risks and fixes</h2>
+<div class="tw"><table>
+<tr><th>Risk</th><th>Fix</th></tr>
+<tr><td>Telugu speech accuracy is low in noisy shops</td><td>Custom vocabulary, confirm screen, short fixed phrases, manual edit and type-instead option</td></tr>
+<tr><td>Owner forgets to log sales, stock drifts</td><td>Weekly stock check and quick recount</td></tr>
+<tr><td>Not enough training data</td><td>Rule-based first, synthetic sentence generation, collect from pilot shops and the correction log</td></tr>
+<tr><td>2B model too heavy or weak in Telugu</td><td>Keep it optional, 4-bit quantization, intent-then-query design, Telugu template answers as fallback</td></tr>
+<tr><td>Different names for the same item or customer</td><td>Synonym dictionary, spelling-variant matching, items the owner can add</td></tr>
+<tr><td>Project scope too big</td><td>Ship the MVP first, treat the assistant and forecasts as Phase 2</td></tr>
+</table></div>
+</section>
+
+<section id="viva">
+<h2>Viva questions and answers</h2>
+<ul>
+<li><b>Why voice?</b> Many shopkeepers are not comfortable typing, and speaking is faster during a busy counter.</li>
+<li><b>Why offline?</b> Internet in small towns is unreliable, and a notebook app must always work.</li>
+<li><b>Why on-device analysis and AI?</b> It keeps shop data private, works without internet and has no cloud cost.</li>
+<li><b>Why Flutter and Supabase?</b> Flutter gives one fast codebase. Supabase gives login and backup without building a server.</li>
+<li><b>Where is ML used?</b> Speech recognition, entity extraction, and stock-out prediction.</li>
+<li><b>Where is AI used?</b> The ~2B on-device assistant that understands Telugu questions and answers from shop data.</li>
+<li><b>Why not let the 2B model write SQL?</b> Small models make mistakes, so the model only picks an intent and phrases the answer, while the database supplies the numbers.</li>
+<li><b>How is it different from existing apps?</b> Most are typing based or Hindi-focused. LOG is Telugu-first, voice-first, fully offline, and adds stock prediction.</li>
+<li><b>What does LOG stand for?</b> We Listen (voice), Organise (ledger and stock), Grow (insights and alerts).</li>
+<li><b>What if speech is misunderstood?</b> The confirm screen lets the owner correct before saving, and undo reverses any saved entry.</li>
+<li><b>How do you measure success?</b> Word error rate, extraction F1, stock-out alert accuracy, and time per entry with real users.</li>
+</ul>
+</section>
+
+<section id="future">
+<h2>Future scope</h2>
+<ul>
+<li>Support Hindi, Tamil and Kannada shopkeepers.</li>
+<li>Send customer payment reminders on WhatsApp.</li>
+<li>Festival and season demand forecasting.</li>
+<li>Supplier price comparison and auto reorder lists.</li>
+<li>Barcode scanning and bill printing.</li>
+</ul>
+</section>
+
+</main>
+<footer>LOG: We Listen · Organise · Grow. Project requirements document.</footer>
+</body>
+</html>

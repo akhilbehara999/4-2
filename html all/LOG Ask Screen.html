@@ -1,0 +1,128 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>LOG Ask Screen</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Noto+Sans+Telugu:wght@400;500;700&display=swap">
+<style>
+/* Layout: Android (Material 3) chat screen. Back + title bar, scrolling conversation (answers can carry a small result card), suggestion chips, input bar with mic and send, shared bottom bar. */
+:root{
+  --bg:#E4EAE9; --surface:#F9FBFB; --container:#EDF2F1; --card:#FFFFFF; --fg:#141E1C; --muted:#5C6D69; --line:#DAE3E1;
+  --accent:#0B6E5F; --accent-tonal:#D3ECE6; --on-accent:#FFFFFF; --red:#B3261E; --red-tonal:#FBE4E1; --orange:#B85A00;
+  --f:'Roboto','Noto Sans Telugu',system-ui,sans-serif; --te:'Noto Sans Telugu','Roboto',system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#070C0B; --surface:#0E1715; --container:#16221F; --card:#142019; --fg:#E3EDEA; --muted:#93A6A1; --line:#26352F;
+  --accent:#4FD1B8; --accent-tonal:#15403A; --on-accent:#04201A; --red:#FFB4AB; --red-tonal:#4A1D19; --orange:#FFB070; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#070C0B; --surface:#0E1715; --container:#16221F; --card:#142019; --fg:#E3EDEA; --muted:#93A6A1; --line:#26352F;
+  --accent:#4FD1B8; --accent-tonal:#15403A; --on-accent:#04201A; --red:#FFB4AB; --red-tonal:#4A1D19; --orange:#FFB070; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font:400 16px/1.4 var(--f);padding-inline:16px;padding-block:28px;display:flex;justify-content:center}
+.app{width:100%;max-width:392px;height:780px;background:var(--surface);border-radius:32px;border:1px solid var(--line);overflow:hidden;display:flex;flex-direction:column}
+.sys{display:flex;justify-content:space-between;align-items:center;padding:10px 22px 0;font-size:12px;font-weight:500;font-variant-numeric:tabular-nums}
+.sys span:last-child{display:flex;gap:6px;align-items:center}
+.top{display:flex;align-items:center;gap:4px;padding:10px 8px 4px}
+.top h1{margin:0;font:500 22px/1.2 var(--f)}
+.top h1 span{font:400 15px var(--te);color:var(--muted);margin-left:8px}
+.ib{width:48px;height:48px;border:0;border-radius:50%;background:none;color:var(--fg);display:grid;place-items:center;cursor:pointer;flex:none}
+.ib:hover{background:var(--container)}
+button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.chat{flex:1;min-height:0;overflow-y:auto;padding:8px 16px 8px;display:flex;flex-direction:column;gap:12px}
+.hello{text-align:center;color:var(--muted);font:400 14px var(--te);padding:6px 0 2px}
+.m{max-width:86%;padding:12px 16px;border-radius:20px;font:400 16px/1.5 var(--te);overflow-wrap:anywhere}
+.m b{font:700 16px var(--f);font-variant-numeric:tabular-nums}
+.m.u{align-self:flex-end;background:var(--accent);color:var(--on-accent);border-bottom-right-radius:6px}
+.m.a{align-self:flex-start;background:var(--container);border-bottom-left-radius:6px}
+.m.a small{display:block;color:var(--muted);font:400 13px var(--f);margin-top:2px}
+.res{margin-top:10px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px;display:flex;flex-direction:column;gap:10px}
+.res .h{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font:500 15px var(--f)}
+.res .h strong{font:700 20px var(--f);font-variant-numeric:tabular-nums}
+.res .btn{height:44px;border-radius:22px;border:0;background:var(--accent);color:var(--on-accent);font:500 15px var(--te);cursor:pointer}
+.res .tags{display:flex;flex-wrap:wrap;gap:6px}
+.res .tags span{background:var(--red-tonal);color:var(--red);border-radius:8px;padding:3px 10px;font:500 13px var(--f)}
+.typing{align-self:flex-start;background:var(--container);border-radius:20px;border-bottom-left-radius:6px;padding:14px 16px;display:flex;gap:5px}
+.typing i{width:7px;height:7px;border-radius:50%;background:var(--muted);animation:d 1s infinite}
+.typing i:nth-child(2){animation-delay:.15s}.typing i:nth-child(3){animation-delay:.3s}
+@keyframes d{50%{opacity:.25}}
+.sug{display:flex;gap:8px;overflow-x:auto;padding:4px 16px 8px;scrollbar-width:none}
+.chip{flex:none;min-height:40px;padding:0 16px;border-radius:12px;border:1px solid var(--line);background:none;color:var(--fg);font:400 14px var(--te);cursor:pointer;white-space:nowrap}
+.chip:hover{background:var(--container)}
+form{display:flex;gap:8px;padding:4px 16px 8px;align-items:center}
+.fld{flex:1;min-width:0;position:relative}
+.fld input{width:100%;height:56px;border-radius:28px;border:0;background:var(--container);color:var(--fg);padding:0 56px 0 20px;font:400 16px var(--te)}
+.fld input::placeholder{color:var(--muted)}
+.mic{position:absolute;right:6px;top:6px;width:44px;height:44px;border-radius:50%;border:0;background:var(--accent-tonal);color:var(--accent);display:grid;place-items:center;cursor:pointer}
+.mic.on{background:var(--red);color:var(--surface)}
+.send{width:56px;height:56px;border-radius:50%;border:0;background:var(--accent);color:var(--on-accent);display:grid;place-items:center;cursor:pointer;flex:none}
+.bar{display:grid;grid-template-columns:1fr 1fr 1fr;align-items:end;background:var(--container);padding:10px 12px 8px;margin-top:6px}
+.bar>button{background:none;border:0;display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--muted);font:500 12px var(--f);cursor:pointer;min-height:56px;justify-content:center}
+.pill{width:64px;height:32px;border-radius:16px;display:grid;place-items:center}
+.bar [aria-current=page]{color:var(--fg)}
+.bar [aria-current=page] .pill{background:var(--accent-tonal);color:var(--accent)}
+.speak{margin-top:-34px;color:var(--fg)!important}
+.speak .m2{width:68px;height:68px;border-radius:50%;background:var(--accent);color:var(--on-accent);display:grid;place-items:center;box-shadow:0 0 0 6px var(--container),0 6px 14px rgba(0,0,0,.25)}
+.gest{background:var(--container);padding:2px 0 8px;display:flex;justify-content:center}
+.gest i{width:110px;height:4px;border-radius:2px;background:var(--fg);opacity:.5}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+@media (max-width:440px){body{padding:0}.app{border-radius:0;border:0;height:100dvh;min-height:640px}}
+</style>
+
+<div class="app">
+  <div class="sys"><span>9:41</span><span aria-hidden="true">
+    <svg width="16" height="12" viewBox="0 0 24 18" fill="currentColor"><path d="M12 3C7.5 3 3.6 4.7 0.5 7.5L12 18 23.5 7.5C20.4 4.7 16.5 3 12 3z"/></svg>
+    <svg width="16" height="12" viewBox="0 0 24 18" fill="currentColor"><path d="M0 18h24V0z"/></svg>
+    <svg width="22" height="12" viewBox="0 0 28 14" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="1" width="23" height="12" rx="3"/><rect x="3" y="3" width="15" height="8" rx="1.5" fill="currentColor" stroke="none"/></svg>
+  </span></div>
+
+  <div class="top">
+    <button class="ib" aria-label="Back"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button>
+    <h1>Ask<span>అడగండి</span></h1>
+  </div>
+
+  <div class="chat" id="chat" aria-live="polite">
+    <div class="hello">మీ దుకాణం గురించి అడగండి · Ask about your shop</div>
+    <div class="m a">నమస్కారం! ఉధార్, అమ్మకాలు, స్టాక్ లేదా లాభం గురించి అడగండి.<small>Ask about udhar, sales, stock or profit.</small></div>
+  </div>
+
+  <div class="sug" id="sug"></div>
+
+  <form id="f">
+    <div class="fld">
+      <input id="q" placeholder="Type or speak · అడగండి" aria-label="Your question" autocomplete="off">
+      <button type="button" class="mic" id="mic" aria-label="Speak your question" aria-pressed="false"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v4"/></svg></button>
+    </div>
+    <button class="send" type="submit" aria-label="Send"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M3 20.5 21 12 3 3.5l.01 6.6L15 12 3.01 13.9z"/></svg></button>
+  </form>
+
+  <nav class="bar" aria-label="Main">
+    <button><span class="pill"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3 3 10.5V21h6v-6h6v6h6V10.5z"/></svg></span>Home</button>
+    <button class="speak" aria-label="Speak"><span class="m2"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v4"/></svg></span>Speak</button>
+    <button aria-current="page"><span class="pill"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg></span>More</button>
+  </nav>
+  <div class="gest"><i></i></div>
+</div>
+
+<script>
+/* Sample answers (examples). The real app answers only these question types from local data. */
+var chat=document.getElementById('chat');
+var SUG=['రామేష్ కి ఎంత ఉధార్ ఉంది?','ఈ రోజు ఎంత సేల్స్?','ఏ వస్తువులు తక్కువ ఉన్నాయి?','ఈ వారం లాభం ఎంత?'];
+function add(cls,html){var m=document.createElement('div');m.className='m '+cls;m.innerHTML=html;chat.appendChild(m);chat.scrollTop=chat.scrollHeight;return m}
+function answer(t){var s=t.toLowerCase();
+  if(/ఉధార్|udhar|ramesh|రామేష్|credit/.test(s))return {h:'రామేష్ ఉధార్ <b>₹4,200</b>. చివరి ఎంట్రీ 21 రోజుల క్రితం.<small>Ramesh owes ₹4,200. Last entry 21 days ago.</small><div class="res"><div class="h"><span>Ramesh · రామేష్</span><strong>₹4,200</strong></div><button class="btn" type="button">జమ · Payment received</button></div>'};
+  if(/stock|తక్కువ|స్టాక్|low|items|వస్తువు/.test(s))return {h:'<b>3</b> వస్తువులు తక్కువ ఉన్నాయి.<small>3 items are running low.</small><div class="res"><div class="tags"><span>Rice 3 kg</span><span>Toor dal 1 kg</span><span>Oil 2 L</span></div></div>'};
+  if(/profit|లాభం|labham/.test(s))return {h:'ఈ వారం లాభం <b>₹16,420</b>. గత వారం కంటే 9% ఎక్కువ.<small>This week\'s profit is ₹16,420, up 9% on last week.</small>'};
+  if(/sales|సేల్స్|అమ్మకాలు|amm|today|ఈ రోజు/.test(s))return {h:'ఈ రోజు అమ్మకాలు <b>₹4,820</b>. అందులో ఉధార్ <b>₹1,200</b>.<small>Today\'s sales are ₹4,820, of which ₹1,200 is on credit.</small>'};
+  return {h:'క్షమించండి, ఆ ప్రశ్న నాకు అర్థం కాలేదు. ఇలా అడగండి:<small>Sorry, I did not understand. Try one of these.</small>',fb:true}}
+function ask(t){t=t.trim();if(!t)return;add('u','');chat.lastChild.textContent=t;
+  var ty=document.createElement('div');ty.className='typing';ty.innerHTML='<i></i><i></i><i></i>';chat.appendChild(ty);chat.scrollTop=chat.scrollHeight;
+  setTimeout(function(){ty.remove();var a=answer(t);add('a',a.h)},500)}
+var sg=document.getElementById('sug');
+SUG.forEach(function(s){var b=document.createElement('button');b.className='chip';b.type='button';b.textContent=s;b.addEventListener('click',function(){ask(s)});sg.appendChild(b)});
+document.getElementById('f').addEventListener('submit',function(e){e.preventDefault();var i=document.getElementById('q');ask(i.value);i.value=''});
+var mic=document.getElementById('mic'),to;
+mic.addEventListener('click',function(){var on=!mic.classList.contains('on');mic.classList.toggle('on',on);mic.setAttribute('aria-pressed',on);var i=document.getElementById('q');clearTimeout(to);
+  if(on){i.placeholder='Listening… · వింటున్నాను…';to=setTimeout(function(){mic.classList.remove('on');mic.setAttribute('aria-pressed',false);i.placeholder='Type or speak · అడగండి';ask('ఈ రోజు ఎంత సేల్స్?')},1600)}else{i.placeholder='Type or speak · అడగండి'}});
+/* Opening state: one example exchange so the screen shows what an answer looks like. */
+add('u','');chat.lastChild.textContent='రామేష్ కి ఎంత ఉధార్ ఉంది?';add('a',answer('ramesh').h);
+</script>
+
+</body></html>

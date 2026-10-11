@@ -1,0 +1,148 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>LOG Stock Screen</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Noto+Sans+Telugu:wght@400;500;700&display=swap">
+<style>
+/* Layout: Android (Material 3) list screen. Back + title bar, weekly check banner, four status counts that double as filters, search, item list with a days-left bar, shared bottom bar with More selected. */
+:root{
+  --bg:#E4EAE9; --surface:#F9FBFB; --container:#EDF2F1; --card:#FFFFFF; --fg:#141E1C; --muted:#5C6D69; --line:#DAE3E1; --track:#E3EAE8;
+  --accent:#0B6E5F; --accent-tonal:#D3ECE6; --on-accent:#FFFFFF;
+  --red:#B3261E; --red-tonal:#FBE4E1; --amber:#8A5A00; --amber-dot:#D68A00; --amber-tonal:#FCEFCF; --green:#2E7D32; --green-tonal:#DDF0DE; --grey:#6B7B77; --grey-tonal:#E6ECEA;
+  --f:'Roboto','Noto Sans Telugu',system-ui,sans-serif; --te:'Noto Sans Telugu','Roboto',system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#070C0B; --surface:#0E1715; --container:#16221F; --card:#142019; --fg:#E3EDEA; --muted:#93A6A1; --line:#26352F; --track:#22302B;
+  --accent:#4FD1B8; --accent-tonal:#15403A; --on-accent:#04201A;
+  --red:#FFB4AB; --red-tonal:#4A1D19; --amber:#F2C45A; --amber-dot:#F2B53A; --amber-tonal:#3A2D0C; --green:#8FDB95; --green-tonal:#183A1D; --grey:#9DB0AB; --grey-tonal:#22302B; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#070C0B; --surface:#0E1715; --container:#16221F; --card:#142019; --fg:#E3EDEA; --muted:#93A6A1; --line:#26352F; --track:#22302B;
+  --accent:#4FD1B8; --accent-tonal:#15403A; --on-accent:#04201A;
+  --red:#FFB4AB; --red-tonal:#4A1D19; --amber:#F2C45A; --amber-dot:#F2B53A; --amber-tonal:#3A2D0C; --green:#8FDB95; --green-tonal:#183A1D; --grey:#9DB0AB; --grey-tonal:#22302B; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font:400 16px/1.4 var(--f);padding-inline:16px;padding-block:28px;display:flex;justify-content:center}
+.app{width:100%;max-width:392px;background:var(--surface);border-radius:32px;border:1px solid var(--line);overflow:hidden;display:flex;flex-direction:column}
+.sys{display:flex;justify-content:space-between;align-items:center;padding:10px 22px 0;font-size:12px;font-weight:500;font-variant-numeric:tabular-nums}
+.sys span:last-child{display:flex;gap:6px;align-items:center}
+.top{display:flex;align-items:center;gap:4px;padding:10px 8px 4px}
+.top h1{margin:0;font:500 22px/1.2 var(--f)}
+.top h1 span{font:400 15px var(--te);color:var(--muted);margin-left:8px}
+.ib{width:48px;height:48px;border:0;border-radius:50%;background:none;color:var(--fg);display:grid;place-items:center;cursor:pointer;flex:none}
+.ib:hover{background:var(--container)}
+button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+main{padding:6px 16px 8px}
+.check{background:var(--amber-tonal);border-radius:24px;padding:16px;display:flex;flex-direction:column;gap:10px}
+.check .lab{font:500 13px var(--f);letter-spacing:.04em;text-transform:uppercase;color:var(--amber)}
+.check .lab span{text-transform:none;letter-spacing:0;font-family:var(--te);margin-left:6px}
+.q{margin:0;font:500 18px/1.45 var(--te)}
+.q small{display:block;font:400 13px var(--f);color:var(--muted)}
+.btns{display:flex;gap:8px}
+.btn{flex:1;height:44px;border-radius:22px;border:1px solid var(--line);background:none;color:var(--accent);font:500 15px var(--te);cursor:pointer}
+.btn.fill{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.done{font:500 14px var(--f);color:var(--green)}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:14px}
+.st{border:0;border-radius:16px;padding:10px 4px 8px;text-align:center;background:var(--bgt);color:var(--fgt);cursor:pointer;font:inherit;outline-offset:2px}
+.st[aria-pressed=true]{box-shadow:inset 0 0 0 2px var(--fgt)}
+.st b{display:block;font:700 22px/1.1 var(--f);font-variant-numeric:tabular-nums}
+.st span{font:500 12px var(--f)}
+.s-red{--bgt:var(--red-tonal);--fgt:var(--red)}.s-amber{--bgt:var(--amber-tonal);--fgt:var(--amber)}.s-green{--bgt:var(--green-tonal);--fgt:var(--green)}.s-grey{--bgt:var(--grey-tonal);--fgt:var(--grey)}
+.search{position:relative;margin-top:14px}
+.search svg{position:absolute;left:16px;top:16px;color:var(--muted)}
+.search input{width:100%;height:56px;border-radius:28px;border:0;background:var(--container);color:var(--fg);padding:0 20px 0 48px;font:400 16px var(--f)}
+.search input::placeholder{color:var(--muted)}
+.list{list-style:none;margin:8px 0 0;padding:0}
+.row{padding:12px 4px;border-bottom:1px solid var(--line)}
+.row:last-child{border:0}
+.r1{display:flex;align-items:center;gap:12px}
+.dot{width:12px;height:12px;border-radius:50%;flex:none;background:var(--dc)}
+.body{flex:1;min-width:0}
+.n{font:500 16px var(--f);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.n span{font:400 14px var(--te);color:var(--muted);margin-left:6px}
+.qty{font:700 16px var(--f);font-variant-numeric:tabular-nums;flex:none}
+.r2{display:flex;align-items:center;gap:10px;margin:8px 0 0 24px}
+.tr{flex:1;height:6px;border-radius:3px;background:var(--track);overflow:hidden}
+.tr i{display:block;height:100%;border-radius:3px;background:var(--dc)}
+.dl{font:500 12px var(--f);color:var(--dc);flex:none;min-width:84px;text-align:right}
+.red{--dc:var(--red)}.amber{--dc:var(--amber-dot)}.amber .dl{color:var(--amber)}.green{--dc:var(--green)}.grey{--dc:var(--grey)}
+.empty{padding:28px 0;text-align:center;color:var(--muted);font-size:14px}
+.bar{display:grid;grid-template-columns:1fr 1fr 1fr;align-items:end;background:var(--container);padding:10px 12px 8px;margin-top:10px}
+.bar>button{background:none;border:0;display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--muted);font:500 12px var(--f);cursor:pointer;min-height:56px;justify-content:center}
+.pill{width:64px;height:32px;border-radius:16px;display:grid;place-items:center}
+.bar [aria-current=page]{color:var(--fg)}
+.bar [aria-current=page] .pill{background:var(--accent-tonal);color:var(--accent)}
+.speak{margin-top:-34px;color:var(--fg)!important}
+.speak .mic{width:68px;height:68px;border-radius:50%;background:var(--accent);color:var(--on-accent);display:grid;place-items:center;box-shadow:0 0 0 6px var(--container),0 6px 14px rgba(0,0,0,.25)}
+.gest{background:var(--container);padding:2px 0 8px;display:flex;justify-content:center}
+.gest i{width:110px;height:4px;border-radius:2px;background:var(--fg);opacity:.5}
+@media (max-width:440px){body{padding:0}.app{border-radius:0;border:0}}
+</style>
+
+<div class="app">
+  <div class="sys"><span>9:41</span><span aria-hidden="true">
+    <svg width="16" height="12" viewBox="0 0 24 18" fill="currentColor"><path d="M12 3C7.5 3 3.6 4.7 0.5 7.5L12 18 23.5 7.5C20.4 4.7 16.5 3 12 3z"/></svg>
+    <svg width="16" height="12" viewBox="0 0 24 18" fill="currentColor"><path d="M0 18h24V0z"/></svg>
+    <svg width="22" height="12" viewBox="0 0 28 14" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="1" width="23" height="12" rx="3"/><rect x="3" y="3" width="15" height="8" rx="1.5" fill="currentColor" stroke="none"/></svg>
+  </span></div>
+
+  <div class="top">
+    <button class="ib" aria-label="Back"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button>
+    <h1>Stock<span>స్టాక్</span></h1>
+  </div>
+
+  <main>
+    <section class="check" id="check" aria-label="Weekly stock check">
+      <div class="lab">Weekly check<span>వారం వారీ స్టాక్ తనిఖీ</span></div>
+      <p class="q">బియ్యం 12 కిలోలు ఉన్నాయా?<small>Rice 12 kg undha?</small></p>
+      <div class="btns"><button class="btn">మార్చు · Edit</button><button class="btn fill" id="yes">అవును · Yes</button></div>
+    </section>
+
+    <div class="stats" role="group" aria-label="Filter by status" id="stats"></div>
+
+    <div class="search">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input id="q" type="search" placeholder="Search item · వస్తువు వెతకండి" aria-label="Search item">
+    </div>
+
+    <ul class="list" id="list"></ul>
+  </main>
+
+  <nav class="bar" aria-label="Main">
+    <button><span class="pill"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3 3 10.5V21h6v-6h6v6h6V10.5z"/></svg></span>Home</button>
+    <button class="speak" aria-label="Speak"><span class="mic"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v4"/></svg></span>Speak</button>
+    <button aria-current="page"><span class="pill"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg></span>More</button>
+  </nav>
+  <div class="gest"><i></i></div>
+</div>
+
+<script>
+/* Sample data (examples). days = estimated days left from the 14-day weighted average. Red 2 or fewer, amber 6 or fewer, green above, grey when there is no usage data yet. */
+var I=[
+ {n:'Rice',te:'బియ్యం',q:'3 kg',d:1},{n:'Toor dal',te:'కందిపప్పు',q:'1 kg',d:1},{n:'Cooking oil',te:'నూనె',q:'2 L',d:2},
+ {n:'Sugar',te:'చక్కెర',q:'6 kg',d:4},{n:'Wheat flour',te:'గోధుమ పిండి',q:'8 kg',d:5},
+ {n:'Salt',te:'ఉప్పు',q:'14 kg',d:30},{n:'Tea powder',te:'టీ పొడి',q:'3 kg',d:12},{n:'Chilli powder',te:'కారం',q:'2 kg',d:9},
+ {n:'Soap',te:'సబ్బు',q:'24 pcs',d:null}];
+var L={red:'Low',amber:'Getting low',green:'Fine',grey:'No data'},filt='all',q='';
+function st(i){return i.d===null?'grey':i.d<=2?'red':i.d<=6?'amber':'green'}
+var sb=document.getElementById('stats');
+['all','red','amber','green','grey'].slice(1).forEach(function(k){
+  var b=document.createElement('button');b.className='st s-'+k;b.dataset.k=k;b.setAttribute('aria-pressed','false');
+  b.innerHTML='<b></b><span></span>';b.querySelector('b').textContent=I.filter(function(i){return st(i)===k}).length;b.querySelector('span').textContent=L[k];
+  b.addEventListener('click',function(){filt=filt===k?'all':k;sb.querySelectorAll('.st').forEach(function(x){x.setAttribute('aria-pressed',x.dataset.k===filt)});render()});sb.appendChild(b)});
+function render(){
+  var r=I.filter(function(i){var s=q.toLowerCase();return (filt==='all'||st(i)===filt)&&(!s||i.n.toLowerCase().indexOf(s)>-1||i.te.indexOf(q)>-1)});
+  var ul=document.getElementById('list');ul.textContent='';
+  if(!r.length){var e=document.createElement('li');e.className='empty';e.textContent='No items match.';ul.appendChild(e);return}
+  r.forEach(function(i){
+    var k=st(i),li=document.createElement('li');li.className='row '+k;
+    li.innerHTML='<div class="r1"><span class="dot"></span><div class="body"><div class="n"></div></div><div class="qty"></div></div><div class="r2"><div class="tr"><i></i></div><div class="dl"></div></div>';
+    var n=li.querySelector('.n');n.textContent=i.n;var t=document.createElement('span');t.textContent=i.te;n.appendChild(t);
+    li.querySelector('.qty').textContent=i.q;
+    li.querySelector('.tr i').style.width=i.d===null?'0%':Math.max(6,Math.min(100,i.d/14*100))+'%';
+    li.querySelector('.dl').textContent=(i.d===null?'No usage yet':i.d===1?'~1 day left':'~'+i.d+' days left');
+    ul.appendChild(li)});
+}
+document.getElementById('q').addEventListener('input',function(){q=this.value.trim();render()});
+document.getElementById('yes').addEventListener('click',function(){var c=document.getElementById('check');c.textContent='';var d=document.createElement('div');d.className='done';d.textContent='Rice 12 kg confirmed · బియ్యం నిర్ధారించబడింది';c.appendChild(d)});
+render();
+</script>
+
+</body></html>

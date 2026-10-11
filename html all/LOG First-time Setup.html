@@ -1,0 +1,169 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>LOG First-time Setup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Noto+Sans+Telugu:wght@400;500;700&display=swap">
+<style>
+/* Layout: Android (Material 3) onboarding shown once. Four steps in one frame: language, shop name, microphone with a try-it phrase, ready with the weekly reminder. Progress bar at the top, Back and Next pinned at the bottom, no bottom bar. */
+:root{
+  --bg:#E4EAE9; --surface:#F9FBFB; --container:#EDF2F1; --fg:#141E1C; --muted:#5C6D69; --line:#DAE3E1; --outline:#8A9B97;
+  --accent:#0B6E5F; --accent-tonal:#D3ECE6; --on-accent:#FFFFFF; --red:#B3261E; --good:#2E7D32; --good-tonal:#DDF0DE;
+  --f:'Roboto','Noto Sans Telugu',system-ui,sans-serif; --te:'Noto Sans Telugu','Roboto',system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#070C0B; --surface:#0E1715; --container:#16221F; --fg:#E3EDEA; --muted:#93A6A1; --line:#26352F; --outline:#5F746E;
+  --accent:#4FD1B8; --accent-tonal:#15403A; --on-accent:#04201A; --red:#FFB4AB; --good:#8FDB95; --good-tonal:#183A1D; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#070C0B; --surface:#0E1715; --container:#16221F; --fg:#E3EDEA; --muted:#93A6A1; --line:#26352F; --outline:#5F746E;
+  --accent:#4FD1B8; --accent-tonal:#15403A; --on-accent:#04201A; --red:#FFB4AB; --good:#8FDB95; --good-tonal:#183A1D; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font:400 16px/1.4 var(--f);padding-inline:16px;padding-block:28px;display:flex;justify-content:center}
+.app{position:relative;width:100%;max-width:392px;height:800px;background:var(--surface);border-radius:32px;border:1px solid var(--line);overflow:hidden;display:flex;flex-direction:column}
+.sys{display:flex;justify-content:space-between;align-items:center;padding:10px 22px 0;font-size:12px;font-weight:500;font-variant-numeric:tabular-nums}
+.sys span:last-child{display:flex;gap:6px;align-items:center}
+.prog{display:flex;gap:6px;padding:18px 24px 0}
+.prog i{flex:1;height:4px;border-radius:2px;background:var(--line);transition:background .2s}
+.prog i.on{background:var(--accent)}
+.stp{padding:10px 24px 0;font:500 13px var(--f);color:var(--muted);letter-spacing:.03em}
+button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+main{flex:1;min-height:0;overflow-y:auto;padding:8px 24px 16px}
+.step{display:none;flex-direction:column;gap:18px;padding-top:8px}
+.step.on{display:flex}
+.mark{font:700 44px/1 var(--f);letter-spacing:.08em;color:var(--accent)}
+.tag{font:400 14px var(--f);color:var(--muted);letter-spacing:.03em;margin-top:6px}
+h1{margin:0;font:500 28px/1.25 var(--f)}
+h1 span{display:block;font:500 22px/1.4 var(--te);color:var(--muted);margin-top:4px}
+.lead{margin:0;font:400 16px/1.55 var(--f);color:var(--muted)}
+.lead span{display:block;font-family:var(--te);margin-top:4px}
+.opt{display:flex;align-items:center;gap:14px;width:100%;min-height:68px;padding:12px 16px;border:1.5px solid var(--line);border-radius:18px;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer}
+.opt+.opt{margin-top:-6px}
+.opt[aria-checked=true]{border-color:var(--accent);background:var(--accent-tonal)}
+.rd{width:22px;height:22px;border-radius:50%;border:2px solid var(--outline);flex:none;display:grid;place-items:center}
+.opt[aria-checked=true] .rd{border-color:var(--accent)}
+.opt[aria-checked=true] .rd::after{content:"";width:10px;height:10px;border-radius:50%;background:var(--accent)}
+.opt b{display:block;font:500 17px var(--te)}
+.opt small{font:400 13px var(--f);color:var(--muted)}
+.rec{margin-left:auto;font:500 12px var(--f);color:var(--accent);flex:none}
+.fld label{display:block;font:500 13px var(--f);color:var(--muted);margin:0 0 6px 4px}
+.in{width:100%;height:56px;border-radius:14px;border:1.5px solid var(--outline);background:var(--surface);color:var(--fg);padding:0 16px;font:400 17px var(--te)}
+.in:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.help{font:400 13px var(--f);color:var(--muted);margin:6px 4px 0}
+.micbox{display:flex;flex-direction:column;align-items:center;gap:14px;background:var(--container);border-radius:28px;padding:22px 18px;text-align:center}
+.micc{width:96px;height:96px;border-radius:50%;background:var(--accent);color:var(--on-accent);display:grid;place-items:center;box-shadow:0 0 0 10px var(--accent-tonal);border:0;cursor:pointer}
+.micc.on{background:var(--red);color:var(--surface)}
+.micc .bars{display:none;gap:4px;align-items:center;height:34px}
+.micc.on .bars{display:flex}.micc.on svg{display:none}
+.bars i{width:5px;height:8px;border-radius:3px;background:currentColor;animation:b .8s ease-in-out infinite}
+.bars i:nth-child(2){animation-delay:.1s}.bars i:nth-child(3){animation-delay:.2s}.bars i:nth-child(4){animation-delay:.3s}.bars i:nth-child(5){animation-delay:.4s}
+@keyframes b{50%{height:30px}}
+.say{font:400 14px var(--f);color:var(--muted)}
+.heard{font:500 19px/1.5 var(--te);min-height:30px}
+.perm{display:flex;align-items:center;gap:10px;font:500 14px var(--f)}
+.perm.ok{color:var(--good)}
+.btn{height:52px;border-radius:26px;border:1px solid var(--outline);background:none;color:var(--accent);font:500 16px var(--f);cursor:pointer;padding:0 22px}
+.btn.fill{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.btn:disabled{opacity:.4;cursor:default}
+.rowsw{display:flex;align-items:center;gap:14px;background:var(--container);border-radius:20px;padding:14px 16px}
+.rowsw .tx{flex:1;min-width:0}
+.rowsw .t{font:500 16px var(--f)}.rowsw .t span{font:400 14px var(--te);color:var(--muted);margin-left:6px}
+.rowsw .s{font:400 14px var(--f);color:var(--muted)}
+.sw{position:relative;width:52px;height:32px;border-radius:16px;border:2px solid var(--outline);background:transparent;cursor:pointer;flex:none;padding:0;transition:.15s}
+.sw::after{content:"";position:absolute;top:6px;left:6px;width:16px;height:16px;border-radius:50%;background:var(--outline);transition:.15s}
+.sw[aria-checked=true]{background:var(--accent);border-color:var(--accent)}
+.sw[aria-checked=true]::after{top:4px;left:22px;width:24px;height:24px;background:var(--on-accent)}
+.tips{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:12px}
+.tips li{display:flex;gap:14px;align-items:flex-start}
+.tips .n{width:32px;height:32px;border-radius:50%;background:var(--accent-tonal);color:var(--accent);display:grid;place-items:center;font:700 15px var(--f);flex:none}
+.tips b{font:500 16px var(--f)}.tips span{display:block;font:400 14px var(--te);color:var(--muted)}
+.foot{display:flex;gap:10px;padding:12px 24px calc(14px + env(safe-area-inset-bottom,0px));background:var(--surface)}
+.foot .btn{flex:1}.foot .btn.fill{flex:2}
+.gest{padding:0 0 8px;display:flex;justify-content:center}
+.gest i{width:110px;height:4px;border-radius:2px;background:var(--fg);opacity:.5}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+@media (max-width:440px){body{padding:0}.app{border-radius:0;border:0;height:100dvh;min-height:640px}}
+</style>
+
+<div class="app">
+  <div class="sys"><span>9:41</span><span aria-hidden="true">
+    <svg width="16" height="12" viewBox="0 0 24 18" fill="currentColor"><path d="M12 3C7.5 3 3.6 4.7 0.5 7.5L12 18 23.5 7.5C20.4 4.7 16.5 3 12 3z"/></svg>
+    <svg width="16" height="12" viewBox="0 0 24 18" fill="currentColor"><path d="M0 18h24V0z"/></svg>
+    <svg width="22" height="12" viewBox="0 0 28 14" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="1" width="23" height="12" rx="3"/><rect x="3" y="3" width="15" height="8" rx="1.5" fill="currentColor" stroke="none"/></svg>
+  </span></div>
+
+  <div class="prog" id="prog" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+  <div class="stp" id="stp"></div>
+
+  <main>
+    <section class="step on" data-s="0">
+      <div><div class="mark">LOG</div><div class="tag">We Listen · Organise · Grow</div></div>
+      <h1>Welcome<span>స్వాగతం</span></h1>
+      <p class="lead">Speak your shop's sales, udhar and stock. LOG writes it down for you, even without internet.<span>మీ అమ్మకాలు, ఉధార్, స్టాక్ చెప్పండి. LOG రాసిపెడుతుంది.</span></p>
+      <div role="radiogroup" aria-label="App language" id="langs" style="display:flex;flex-direction:column;gap:10px"></div>
+    </section>
+
+    <section class="step" data-s="1">
+      <h1>Your shop<span>మీ దుకాణం</span></h1>
+      <p class="lead">This name appears at the top of your Home screen.</p>
+      <div class="fld"><label for="sn">Shop name</label><input class="in" id="sn" placeholder="e.g. Sri Lakshmi Kirana" autocomplete="off"></div>
+      <div class="fld"><label for="st">Shop name in Telugu · తెలుగులో పేరు (optional)</label><input class="in" id="st" placeholder="శ్రీ లక్ష్మి కిరాణా" autocomplete="off"></div>
+      <div class="fld"><label for="so">Your name (optional)</label><input class="in" id="so" autocomplete="off"></div>
+    </section>
+
+    <section class="step" data-s="2">
+      <h1>Let LOG hear you<span>మైక్ అనుమతి</span></h1>
+      <p class="lead">LOG needs your microphone to turn what you say into entries. Your voice is not saved or sent anywhere.</p>
+      <div class="micbox">
+        <div class="perm" id="perm"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16h.01"/></svg><span>Microphone is off</span></div>
+        <button class="btn fill" id="allow" type="button">Allow microphone</button>
+        <div id="try" hidden style="display:flex;flex-direction:column;align-items:center;gap:12px;width:100%">
+          <div class="say">Tap the mic and say:<br><b style="font-family:var(--te);font-weight:500;color:var(--fg)">“రామేష్‌కి 5 కిలోల బియ్యం అప్పు, 300 రూపాయలు”</b></div>
+          <button class="micc" id="micc" type="button" aria-label="Try speaking"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v4"/></svg><span class="bars"><i></i><i></i><i></i><i></i><i></i></span></button>
+          <div class="heard" id="heard" aria-live="polite"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="step" data-s="3">
+      <h1>You are ready<span>సిద్ధం</span></h1>
+      <ul class="tips">
+        <li><span class="n">1</span><div><b>Tap Speak and say an entry</b><span>స్పీక్ నొక్కి చెప్పండి</span></div></li>
+        <li><span class="n">2</span><div><b>Check it on the Confirm screen</b><span>సరిచూసి సేవ్ చేయండి</span></div></li>
+        <li><span class="n">3</span><div><b>See udhar, stock and profit any time</b><span>ఉధార్, స్టాక్, లాభం చూడండి</span></div></li>
+      </ul>
+      <div class="rowsw"><span class="tx"><div class="t">Weekly stock check<span>వారం వారీ</span></div><div class="s">A reminder every Sunday at 8:00 AM to confirm your stock.</div></span>
+        <button class="sw" id="sw" role="switch" aria-checked="true" aria-label="Weekly stock check reminder"></button></div>
+    </section>
+  </main>
+
+  <div class="foot"><button class="btn" id="back" type="button">Back</button><button class="btn fill" id="next" type="button">Next · తరువాత</button></div>
+  <div class="gest"><i></i></div>
+</div>
+
+<script>
+var $=function(i){return document.getElementById(i)};
+var step=0,N=4,lang='both',micOn=false,t1;
+var LANGS=[['both','తెలుగు + English','Telugu and English together'],['te','తెలుగు','Telugu only'],['en','English','English only']];
+LANGS.forEach(function(l,i){var b=document.createElement('button');b.type='button';b.className='opt';b.setAttribute('role','radio');b.setAttribute('aria-checked',l[0]===lang);
+  b.innerHTML='<span class="rd"></span><span><b></b><small></small></span>';b.querySelector('b').textContent=l[1];b.querySelector('small').textContent=l[2];
+  if(i===0){var r=document.createElement('span');r.className='rec';r.textContent='Recommended';b.appendChild(r)}
+  b.addEventListener('click',function(){lang=l[0];$('langs').querySelectorAll('.opt').forEach(function(x){x.setAttribute('aria-checked',x===b)})});$('langs').appendChild(b)});
+function show(){
+  document.querySelectorAll('.step').forEach(function(s){s.classList.toggle('on',+s.dataset.s===step)});
+  $('prog').querySelectorAll('i').forEach(function(p,i){p.classList.toggle('on',i<=step)});
+  $('stp').textContent='Step '+(step+1)+' of '+N;
+  $('back').style.visibility=step===0?'hidden':'visible';
+  $('next').textContent=step===N-1?'Start using LOG · ప్రారంభించండి':'Next · తరువాత';
+  gate();document.querySelector('main').scrollTop=0}
+function gate(){var ok=true;if(step===1)ok=!!$('sn').value.trim();if(step===2)ok=micOn;$('next').disabled=!ok}
+$('sn').addEventListener('input',gate);
+$('back').addEventListener('click',function(){if(step>0){step--;show()}});
+$('next').addEventListener('click',function(){if(step<N-1){step++;show()}else{$('next').textContent='Done · opens Home (sample)';$('next').disabled=true}});
+$('try').hidden=true;$('try').style.display='none';
+$('allow').addEventListener('click',function(){micOn=true;var p=$('perm');p.className='perm ok';p.innerHTML='<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg><span>Microphone is on</span>';
+  $('allow').style.display='none';$('try').hidden=false;$('try').style.display='flex';gate()});
+$('micc').addEventListener('click',function(){var m=$('micc'),on=!m.classList.contains('on');m.classList.toggle('on',on);clearTimeout(t1);
+  if(on){$('heard').textContent='…';t1=setTimeout(function(){m.classList.remove('on');$('heard').textContent='రామేష్‌కి 5 కిలోల బియ్యం అప్పు, 300 రూపాయలు'},1500)}});
+$('sw').addEventListener('click',function(){this.setAttribute('aria-checked',this.getAttribute('aria-checked')!=='true')});
+show();
+</script>
+
+</body></html>

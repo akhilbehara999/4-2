@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="te">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>LOG – We Listen · Organise · Grow</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Noto+Sans+Telugu:wght@400;500;700&display=swap">
+  <link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+  <div class="app" id="app">
+    <!-- Android System Status Bar -->
+    <div class="sys" aria-hidden="true">
+      <span id="status-clock">9:41</span>
+      <span>
+        <svg width="16" height="12" viewBox="0 0 24 18" fill="currentColor">
+          <path d="M12 3C7.5 3 3.6 4.7 0.5 7.5L12 18 23.5 7.5C20.4 4.7 16.5 3 12 3z"/>
+        </svg>
+        <svg width="16" height="12" viewBox="0 0 24 18" fill="currentColor">
+          <path d="M0 18h24V0z"/>
+        </svg>
+        <svg width="22" height="12" viewBox="0 0 28 14" fill="none" stroke="currentColor" stroke-width="1.5">
+          <rect x="1" y="1" width="23" height="12" rx="3"/>
+          <rect x="3" y="3" width="15" height="8" rx="1.5" fill="currentColor" stroke="none"/>
+        </svg>
+      </span>
+    </div>
+
+    <!-- Active Screen Viewport -->
+    <main id="screen-viewport" role="main"></main>
+
+    <!-- Bottom Navigation Bar (Home | Speak | More) -->
+    <nav class="bar" id="bottom-nav" aria-label="Main Navigation">
+      <button id="nav-home" aria-label="Home" aria-current="page">
+        <span class="pill">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 3 3 10.5V21h6v-6h6v6h6V10.5z"/>
+          </svg>
+        </span>
+        Home
+      </button>
+
+      <button class="speak" id="nav-speak" aria-label="Speak">
+        <span class="mic">
+          <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="9" y="2" width="6" height="12" rx="3"/>
+            <path d="M5 11a7 7 0 0 0 14 0M12 18v4"/>
+          </svg>
+        </span>
+        Speak
+      </button>
+
+      <button id="nav-more" aria-label="More">
+        <span class="pill">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+            <circle cx="5" cy="12" r="2"/>
+            <circle cx="12" cy="12" r="2"/>
+            <circle cx="19" cy="12" r="2"/>
+          </svg>
+        </span>
+        More
+      </button>
+    </nav>
+
+    <!-- Android Gesture Handle -->
+    <div class="gest" aria-hidden="true"><i></i></div>
+
+    <!-- Global Scrim & Notifications -->
+    <div class="scrim" id="global-scrim" aria-hidden="true"></div>
+    <div class="toast" id="global-toast" role="status" aria-live="polite"></div>
+    <div class="snack" id="global-snack" role="status" aria-live="polite">
+      <span id="snack-msg"></span>
+      <button id="snack-undo" type="button">Undo</button>
+    </div>
+  </div>
+
+  <!-- Core Data & Logic -->
+  <script src="js/store.js"></script>
+  <script src="js/engine.js"></script>
+  <script src="js/parser.js"></script>
+  <script src="js/router.js"></script>
+
+  <!-- Screens (16 Screens) -->
+  <script src="js/screens/setup.js"></script>
+  <script src="js/screens/home.js"></script>
+  <script src="js/screens/listen.js"></script>
+  <script src="js/screens/confirm.js"></script>
+  <script src="js/screens/more.js"></script>
+  <script src="js/screens/udhar.js"></script>
+  <script src="js/screens/udhar-detail.js"></script>
+  <script src="js/screens/stock.js"></script>
+  <script src="js/screens/stock-detail.js"></script>
+  <script src="js/screens/dashboard.js"></script>
+  <script src="js/screens/ask.js"></script>
+  <script src="js/screens/transactions.js"></script>
+  <script src="js/screens/customers.js"></script>
+  <script src="js/screens/items.js"></script>
+  <script src="js/screens/settings.js"></script>
+  <script src="js/screens/recount.js"></script>
+
+  <!-- Prototype Bootstrap -->
+  <script>
+    (function () {
+      'use strict';
+
+      // Keep status clock updated
+      function updateClock() {
+        var clockEl = document.getElementById('status-clock');
+        if (clockEl) {
+          var now = new Date();
+          var h = now.getHours();
+          var m = now.getMinutes();
+          clockEl.textContent = (h < 10 ? '0' : '') + h + ':' + (m < 10 ? '0' : '') + m;
+        }
+      }
+      updateClock();
+      setInterval(updateClock, 30000);
+
+      // Restore saved theme on startup
+      try {
+        var store = window.LOG && window.LOG.store;
+        if (store) {
+          var s = store.getSettings();
+          if (s && s.theme) {
+            document.documentElement.setAttribute('data-theme', s.theme);
+          }
+        }
+      } catch (e) {}
+
+      // Start Router
+      if (window.LOG && window.LOG.router) {
+        window.LOG.router.init();
+        // Print screen map to browser console
+        window.LOG.router.printScreenMap();
+      }
+    })();
+  </script>
+</body>
+</html>

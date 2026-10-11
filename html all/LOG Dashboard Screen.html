@@ -1,0 +1,224 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>LOG Dashboard Screen</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Noto+Sans+Telugu:wght@400;500;700&display=swap">
+<style>
+/* Layout: Android (Material 3) dashboard. Back + title bar, period selector, four summary tiles, revenue line chart, split donut, ranked bars, credit vs cash bar, expense bars. One axis per chart; the same period drives everything. */
+:root{
+  --bg:#E4EAE9; --surface:#F9FBFB; --container:#EDF2F1; --card:#FFFFFF; --fg:#141E1C; --muted:#5C6D69; --line:#DAE3E1; --grid:#E3EAE8;
+  --accent:#0B6E5F; --accent-tonal:#D3ECE6; --on-accent:#FFFFFF; --red:#B3261E; --good:#2E7D32;
+  --c-credit:#3B73C9; --c-exp:#D9731A; --c-profit:#0B8F7A; --c-cash:#0B8F7A;
+  --f:'Roboto','Noto Sans Telugu',system-ui,sans-serif; --te:'Noto Sans Telugu','Roboto',system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#070C0B; --surface:#0E1715; --container:#16221F; --card:#142019; --fg:#E3EDEA; --muted:#93A6A1; --line:#26352F; --grid:#22302B;
+  --accent:#4FD1B8; --accent-tonal:#15403A; --on-accent:#04201A; --red:#FFB4AB; --good:#8FDB95;
+  --c-credit:#7FA9EE; --c-exp:#F0A060; --c-profit:#4FD1B8; --c-cash:#4FD1B8; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#070C0B; --surface:#0E1715; --container:#16221F; --card:#142019; --fg:#E3EDEA; --muted:#93A6A1; --line:#26352F; --grid:#22302B;
+  --accent:#4FD1B8; --accent-tonal:#15403A; --on-accent:#04201A; --red:#FFB4AB; --good:#8FDB95;
+  --c-credit:#7FA9EE; --c-exp:#F0A060; --c-profit:#4FD1B8; --c-cash:#4FD1B8; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font:400 16px/1.4 var(--f);padding-inline:16px;padding-block:28px;display:flex;justify-content:center}
+.app{width:100%;max-width:392px;background:var(--surface);border-radius:32px;border:1px solid var(--line);overflow:hidden;display:flex;flex-direction:column}
+.sys{display:flex;justify-content:space-between;align-items:center;padding:10px 22px 0;font-size:12px;font-weight:500;font-variant-numeric:tabular-nums}
+.sys span:last-child{display:flex;gap:6px;align-items:center}
+.top{display:flex;align-items:center;gap:4px;padding:10px 8px 4px}
+.top h1{margin:0;font:500 22px/1.2 var(--f)}
+.top h1 span{font:400 15px var(--te);color:var(--muted);margin-left:8px}
+.ib{width:48px;height:48px;border:0;border-radius:50%;background:none;color:var(--fg);display:grid;place-items:center;cursor:pointer;flex:none}
+.ib:hover{background:var(--container)}
+button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+main{padding:6px 16px 8px;display:flex;flex-direction:column;gap:14px}
+.seg{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--line);border-radius:20px;overflow:hidden}
+.seg button{height:40px;border:0;background:none;color:var(--fg);font:500 14px var(--f);cursor:pointer}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button[aria-pressed=true]{background:var(--accent-tonal);color:var(--accent)}
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.k{background:var(--container);border-radius:20px;padding:14px 14px 12px;min-width:0}
+.k .l{font:500 12px var(--f);letter-spacing:.03em;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;gap:6px}
+.k .l i{width:8px;height:8px;border-radius:50%;flex:none}
+.k .v{font:700 24px/1.2 var(--f);font-variant-numeric:tabular-nums;letter-spacing:-.01em;margin-top:4px}
+.k .d{font:500 12px var(--f);margin-top:2px;color:var(--good)}
+.k .d.neg{color:var(--red)}
+.k .d small{font-weight:400;color:var(--muted)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:24px;padding:16px;min-width:0}
+.ch{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:8px}
+.ch h2{margin:0;font:500 16px var(--f)}
+.ch h2 span{display:block;font:400 13px var(--te);color:var(--muted)}
+.tg{border:1px solid var(--line);background:none;color:var(--accent);height:32px;padding:0 12px;border-radius:16px;font:500 13px var(--f);cursor:pointer;flex:none}
+.big{font:700 22px var(--f);font-variant-numeric:tabular-nums}
+.big small{font:400 12px var(--f);color:var(--muted);margin-left:6px}
+svg text{font-family:var(--f);fill:var(--muted)}
+.hit{fill:transparent;cursor:pointer}
+table{width:100%;border-collapse:collapse;font-size:14px;font-variant-numeric:tabular-nums}
+th,td{padding:8px 0;border-bottom:1px solid var(--line);text-align:left}
+th:last-child,td:last-child{text-align:right}
+th{font:500 12px var(--f);color:var(--muted);text-transform:uppercase;letter-spacing:.03em}
+.donut{display:flex;align-items:center;gap:16px}
+.donut svg{width:112px;flex:none}
+.leg{flex:1;min-width:0;display:flex;flex-direction:column;gap:8px}
+.leg div{display:flex;align-items:center;gap:8px;font-size:14px}
+.leg i{width:10px;height:10px;border-radius:50%;flex:none}
+.leg em{font-style:normal;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.leg b{font-weight:500;font-variant-numeric:tabular-nums}
+.leg small{color:var(--muted);width:34px;text-align:right;font-variant-numeric:tabular-nums}
+.rank{display:flex;flex-direction:column;gap:12px;margin:0;padding:0;list-style:none}
+.rank li{display:grid;grid-template-columns:1fr auto;gap:4px 12px;align-items:baseline}
+.rank .n{font-size:14px;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rank .n span{font:400 13px var(--te);color:var(--muted);margin-left:6px}
+.rank .a{font:500 14px var(--f);font-variant-numeric:tabular-nums}
+.rank .t{grid-column:1/-1;height:8px;border-radius:4px;background:var(--grid);overflow:hidden}
+.rank .t i{display:block;height:100%;border-radius:4px;background:var(--bc,var(--accent))}
+.split{display:flex;gap:2px;height:20px;border-radius:10px;overflow:hidden;margin:6px 0 10px}
+.split i{display:block;height:100%}
+.note{font-size:13px;color:var(--muted);margin:10px 0 0}
+.bar{display:grid;grid-template-columns:1fr 1fr 1fr;align-items:end;background:var(--container);padding:10px 12px 8px;margin-top:10px}
+.bar>button{background:none;border:0;display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--muted);font:500 12px var(--f);cursor:pointer;min-height:56px;justify-content:center}
+.pill{width:64px;height:32px;border-radius:16px;display:grid;place-items:center}
+.bar [aria-current=page]{color:var(--fg)}
+.bar [aria-current=page] .pill{background:var(--accent-tonal);color:var(--accent)}
+.speak{margin-top:-34px;color:var(--fg)!important}
+.speak .mic{width:68px;height:68px;border-radius:50%;background:var(--accent);color:var(--on-accent);display:grid;place-items:center;box-shadow:0 0 0 6px var(--container),0 6px 14px rgba(0,0,0,.25)}
+.gest{background:var(--container);padding:2px 0 8px;display:flex;justify-content:center}
+.gest i{width:110px;height:4px;border-radius:2px;background:var(--fg);opacity:.5}
+@media (max-width:440px){body{padding:0}.app{border-radius:0;border:0}}
+</style>
+
+<div class="app">
+  <div class="sys"><span>9:41</span><span aria-hidden="true">
+    <svg width="16" height="12" viewBox="0 0 24 18" fill="currentColor"><path d="M12 3C7.5 3 3.6 4.7 0.5 7.5L12 18 23.5 7.5C20.4 4.7 16.5 3 12 3z"/></svg>
+    <svg width="16" height="12" viewBox="0 0 24 18" fill="currentColor"><path d="M0 18h24V0z"/></svg>
+    <svg width="22" height="12" viewBox="0 0 28 14" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="1" width="23" height="12" rx="3"/><rect x="3" y="3" width="15" height="8" rx="1.5" fill="currentColor" stroke="none"/></svg>
+  </span></div>
+
+  <div class="top">
+    <button class="ib" aria-label="Back"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button>
+    <h1>Dashboard<span>డాష్‌బోర్డ్</span></h1>
+  </div>
+
+  <main>
+    <div class="seg" role="group" aria-label="Period" id="seg">
+      <button data-p="today" aria-pressed="false">Today · ఈ రోజు</button>
+      <button data-p="week" aria-pressed="true">Week · వారం</button>
+      <button data-p="month" aria-pressed="false">Month · నెల</button>
+    </div>
+
+    <div class="tiles" id="tiles"></div>
+
+    <section class="card" aria-label="Revenue">
+      <div class="ch"><h2 id="rt">Revenue<span>ఆదాయం</span></h2><button class="tg" id="tgl">Table</button></div>
+      <div class="big" id="rv"></div>
+      <div id="chart"></div>
+    </section>
+
+    <section class="card" aria-label="Where sales went">
+      <div class="ch"><h2>Sales split<span>అమ్మకాల విభజన</span></h2></div>
+      <div class="donut"><svg id="donut" viewBox="0 0 100 100" role="img" aria-label="Donut of credit, expenditure and profit"></svg><div class="leg" id="leg"></div></div>
+    </section>
+
+    <section class="card" aria-label="Top selling items">
+      <div class="ch"><h2>Top selling items<span>ఎక్కువ అమ్ముడైనవి</span></h2></div>
+      <ul class="rank" id="top"></ul>
+    </section>
+
+    <section class="card" aria-label="Credit versus cash">
+      <div class="ch"><h2>Credit vs cash<span>ఉధార్ · నగదు</span></h2></div>
+      <div class="split" id="cc"></div>
+      <div class="leg" id="ccl"></div>
+      <p class="note" id="ccn"></p>
+    </section>
+
+    <section class="card" aria-label="Biggest expenses">
+      <div class="ch"><h2>Biggest expenses<span>ప్రధాన ఖర్చులు</span></h2></div>
+      <ul class="rank" id="ex"></ul>
+    </section>
+  </main>
+
+  <nav class="bar" aria-label="Main">
+    <button><span class="pill"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3 3 10.5V21h6v-6h6v6h6V10.5z"/></svg></span>Home</button>
+    <button class="speak" aria-label="Speak"><span class="mic"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v4"/></svg></span>Speak</button>
+    <button aria-current="page"><span class="pill"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg></span>More</button>
+  </nav>
+  <div class="gest"><i></i></div>
+</div>
+
+<script>
+/* Sample data (examples). Sales = credit + expenditure + profit, matching the Home screen split. */
+var D={
+ today:{unit:'Hourly sales',lab:['8am','10','12','2pm','4','6pm'],rev:[320,640,980,610,1350,920],sp:{c:1200,e:680,p:2940},dl:['+8%','+5%','+12%','+4%'],
+   top:[['Rice','బియ్యం',1050],['Toor dal','కందిపప్పు',660],['Oil','నూనె',580],['Sugar','చక్కెర',440],['Wheat flour','గోధుమ పిండి',360]],
+   ex:[['Restock','రీస్టాక్',400],['Transport','రవాణా',120],['Electricity','కరెంటు',80],['Other','ఇతర',80]],cmp:'yesterday'},
+ week:{unit:'Daily sales',lab:['Sun','Mon','Tue','Wed','Thu','Fri','Sat'],rev:[3600,3200,4100,3800,4700,4300,4820],sp:{c:6400,e:5700,p:16420},dl:['+6%','+3%','+9%','-2%'],
+   top:[['Rice','బియ్యం',6200],['Toor dal','కందిపప్పు',3900],['Oil','నూనె',3400],['Sugar','చక్కెర',2600],['Wheat flour','గోధుమ పిండి',2100]],
+   ex:[['Restock','రీస్టాక్',3800],['Rent','అద్దె',800],['Electricity','కరెంటు',520],['Transport','రవాణా',380],['Other','ఇతర',200]],cmp:'last week'},
+ month:{unit:'Weekly sales',lab:['Wk 1','Wk 2','Wk 3','Wk 4'],rev:[24800,27100,26300,28520],sp:{c:24100,e:21300,p:61320},dl:['+11%','+7%','+14%','+5%'],
+   top:[['Rice','బియ్యం',23000],['Toor dal','కందిపప్పు',14400],['Oil','నూనె',12600],['Sugar','చక్కెర',9600],['Wheat flour','గోధుమ పిండి',7800]],
+   ex:[['Restock','రీస్టాక్',14200],['Rent','అద్దె',3200],['Electricity','కరెంటు',1900],['Transport','రవాణా',1200],['Other','ఇతర',800]],cmp:'last month'}};
+var NS='http://www.w3.org/2000/svg',per='week',tbl=false;
+function el(n,a,p){var e=document.createElementNS(NS,n);for(var k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e}
+function inr(v){return '₹'+v.toLocaleString('en-IN')}
+function sum(a){return a.reduce(function(s,x){return s+x},0)}
+function clear(n){n.textContent=''}
+function legRow(p,c,name,val,pct){var d=document.createElement('div');d.innerHTML='<i></i><em></em><b></b>'+(pct!=null?'<small></small>':'');
+  d.querySelector('i').style.background=c;d.querySelector('em').textContent=name;d.querySelector('b').textContent=val;if(pct!=null)d.querySelector('small').textContent=pct+'%';p.appendChild(d)}
+function bars(ul,rows,col){clear(ul);var m=Math.max.apply(null,rows.map(function(r){return r[2]}));
+  rows.forEach(function(r){var li=document.createElement('li');li.innerHTML='<div class="n"></div><div class="a"></div><div class="t"><i></i></div>';
+    var n=li.querySelector('.n');n.textContent=r[0];var s=document.createElement('span');s.textContent=r[1];n.appendChild(s);
+    li.querySelector('.a').textContent=inr(r[2]);var i=li.querySelector('i');i.style.width=(r[2]/m*100)+'%';i.parentNode.style.setProperty('--bc',col);ul.appendChild(li)})}
+function drawLine(d){
+  var box=document.getElementById('chart');clear(box);
+  if(tbl){var t=document.createElement('table');t.innerHTML='<thead><tr><th>'+d.unit.split(' ')[0]+'</th><th>Sales</th></tr></thead>';var tb=document.createElement('tbody');
+    d.rev.forEach(function(v,i){var tr=document.createElement('tr');tr.innerHTML='<td></td><td></td>';tr.children[0].textContent=d.lab[i];tr.children[1].textContent=inr(v);tb.appendChild(tr)});t.appendChild(tb);box.appendChild(t);return}
+  var W=300,H=150,L=34,R=12,T=10,B=26,n=d.rev.length,mx=Math.ceil(Math.max.apply(null,d.rev)/1000)*1000;
+  var svg=el('svg',{viewBox:'0 0 '+W+' '+H,width:'100%',role:'img','aria-label':d.unit+' line chart'});box.appendChild(svg);
+  function X(i){return L+i*(W-L-R)/(n-1)}function Y(v){return T+(1-v/mx)*(H-T-B)}
+  [0,.5,1].forEach(function(f){var v=mx*f;el('line',{x1:L,x2:W-R,y1:Y(v),y2:Y(v),stroke:'var(--grid)','stroke-width':1},svg);
+    el('text',{x:L-6,y:Y(v)+3,'font-size':9,'text-anchor':'end'},svg).textContent=v>=1000?'₹'+(v/1000)+'k':'₹0'});
+  var p='M'+d.rev.map(function(v,i){return X(i)+' '+Y(v)}).join(' L');
+  var df=el('defs',{},svg),g=el('linearGradient',{id:'ag',x1:0,y1:0,x2:0,y2:1},df);
+  el('stop',{offset:'0','stop-color':'var(--accent)','stop-opacity':.22},g);el('stop',{offset:'1','stop-color':'var(--accent)','stop-opacity':0},g);
+  el('path',{d:p+' L'+X(n-1)+' '+Y(0)+' L'+X(0)+' '+Y(0)+'Z',fill:'url(#ag)'},svg);
+  el('path',{d:p,fill:'none',stroke:'var(--accent)','stroke-width':2,'stroke-linejoin':'round','stroke-linecap':'round'},svg);
+  d.lab.forEach(function(l,i){el('text',{x:X(i),y:H-8,'font-size':9,'text-anchor':'middle'},svg).textContent=l});
+  var cur=el('line',{y1:T,y2:Y(0),stroke:'var(--muted)','stroke-width':1,'stroke-dasharray':'2 2',opacity:0},svg);
+  var dot=el('circle',{r:4.5,fill:'var(--accent)',stroke:'var(--card)','stroke-width':2},svg);
+  var rv=document.getElementById('rv');
+  function sel(i,on){dot.setAttribute('cx',X(i));dot.setAttribute('cy',Y(d.rev[i]));cur.setAttribute('x1',X(i));cur.setAttribute('x2',X(i));cur.setAttribute('opacity',on?1:0);
+    rv.innerHTML=inr(d.rev[i])+'<small>'+d.lab[i]+'</small>'}
+  function reset(){sel(n-1,false);rv.innerHTML=inr(sum(d.rev))+'<small>total</small>'}
+  d.rev.forEach(function(v,i){var r=el('rect',{x:X(i)-(W-L-R)/(n-1)/2,y:0,width:(W-L-R)/(n-1),height:H-B,class:'hit'},svg);
+    r.addEventListener('mouseenter',function(){sel(i,true)});r.addEventListener('click',function(){sel(i,true)});r.addEventListener('mouseleave',reset)});
+  reset();
+}
+function render(){
+  var d=D[per],s=d.sp,sales=s.c+s.e+s.p;
+  var tl=document.getElementById('tiles');clear(tl);
+  [['Sales','var(--accent)',sales,0],['Expenses','var(--c-exp)',s.e,1],['Profit','var(--c-profit)',s.p,2],['Credit given','var(--c-credit)',s.c,3]].forEach(function(k){
+    var neg=d.dl[k[3]][0]==='-',e=document.createElement('div');e.className='k';e.innerHTML='<div class="l"><i></i></div><div class="v"></div><div class="d"><span></span> <small></small></div>';
+    e.querySelector('i').style.background=k[1];e.querySelector('.l').appendChild(document.createTextNode(k[0]));
+    e.querySelector('.v').textContent=inr(k[2]);var dd=e.querySelector('.d');if(neg)dd.className='d neg';
+    dd.children[0].textContent=(neg?'▼ ':'▲ ')+d.dl[k[3]].slice(1);dd.children[1].textContent='vs '+d.cmp;tl.appendChild(e)});
+  drawLine(d);
+  var ds=document.getElementById('donut');clear(ds);var C=2*Math.PI*38,off=0;
+  el('circle',{cx:50,cy:50,r:38,fill:'none',stroke:'var(--grid)','stroke-width':12},ds);
+  var parts=[['Credit · ఉధార్','var(--c-credit)',s.c],['Expenditure · ఖర్చు','var(--c-exp)',s.e],['Profit · లాభం','var(--c-profit)',s.p]],lg=document.getElementById('leg');clear(lg);
+  parts.forEach(function(p){var len=p[2]/sales*C;el('circle',{cx:50,cy:50,r:38,fill:'none',stroke:p[1],'stroke-width':12,'stroke-dasharray':(len-3)+' '+(C-len+3),'stroke-dashoffset':-off,transform:'rotate(-90 50 50)'},ds);off+=len;
+    legRow(lg,p[1],p[0].split(' · ')[0],inr(p[2]),Math.round(p[2]/sales*100))});
+  el('text',{x:50,y:47,'font-size':8,'text-anchor':'middle'},ds).textContent='Sales';
+  var tt=el('text',{x:50,y:60,'font-size':12,'font-weight':700,'text-anchor':'middle'},ds);tt.style.fill='var(--fg)';tt.textContent=inr(sales);
+  bars(document.getElementById('top'),d.top,'var(--accent)');
+  bars(document.getElementById('ex'),d.ex,'var(--c-exp)');
+  var cc=document.getElementById('cc');clear(cc);var cash=sales-s.c;
+  [[s.c,'var(--c-credit)'],[cash,'var(--c-cash)']].forEach(function(x){var i=document.createElement('i');i.style.width=(x[0]/sales*100)+'%';i.style.background=x[1];cc.appendChild(i)});
+  var cl=document.getElementById('ccl');clear(cl);
+  legRow(cl,'var(--c-credit)','Credit (ఉధార్)',inr(s.c),Math.round(s.c/sales*100));legRow(cl,'var(--c-cash)','Cash (నగదు)',inr(cash),Math.round(cash/sales*100));
+  document.getElementById('ccn').textContent=Math.round(s.c/sales*100)+'% of sales was given on credit and is still to be collected.';
+}
+document.querySelectorAll('#seg button').forEach(function(b){b.addEventListener('click',function(){per=b.dataset.p;
+  document.querySelectorAll('#seg button').forEach(function(x){x.setAttribute('aria-pressed',x===b)});render()})});
+document.getElementById('tgl').addEventListener('click',function(){tbl=!tbl;this.textContent=tbl?'Chart':'Table';drawLine(D[per])});
+render();
+</script>
+
+</body></html>

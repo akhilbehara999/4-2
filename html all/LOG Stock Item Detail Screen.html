@@ -1,0 +1,282 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>LOG Stock Item Detail Screen</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Noto+Sans+Telugu:wght@400;500;700&display=swap">
+<style>
+/* Layout: Android (Material 3) detail screen. Back + edit bar, item header with a status chip, one quantity panel with two actions, a 14-day usage bar chart with the weighted average line, history, and bottom sheets for Correct count and Edit item. */
+:root{
+  --bg:#E4EAE9; --surface:#F9FBFB; --container:#EDF2F1; --card:#FFFFFF; --fg:#141E1C; --muted:#5C6D69; --line:#DAE3E1; --outline:#8A9B97; --grid:#E3EAE8;
+  --accent:#0B6E5F; --accent-tonal:#D3ECE6; --on-accent:#FFFFFF;
+  --red:#B3261E; --red-tonal:#FBE4E1; --amber:#8A5A00; --amber-tonal:#FCEFCF; --green:#2E7D32; --green-tonal:#DDF0DE;
+  --orange:#B85A00; --purple:#7A3FB0; --blue:#1D5CB8; --inv:#2B3532; --on-inv:#F1F6F4; --scrim:rgba(0,0,0,.4);
+  --f:'Roboto','Noto Sans Telugu',system-ui,sans-serif; --te:'Noto Sans Telugu','Roboto',system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#070C0B; --surface:#0E1715; --container:#16221F; --card:#142019; --fg:#E3EDEA; --muted:#93A6A1; --line:#26352F; --outline:#5F746E; --grid:#22302B;
+  --accent:#4FD1B8; --accent-tonal:#15403A; --on-accent:#04201A;
+  --red:#FFB4AB; --red-tonal:#4A1D19; --amber:#F2C45A; --amber-tonal:#3A2D0C; --green:#8FDB95; --green-tonal:#183A1D;
+  --orange:#FFB070; --purple:#D5AEF5; --blue:#9CC2FF; --inv:#DDE7E4; --on-inv:#141E1C; --scrim:rgba(0,0,0,.6); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#070C0B; --surface:#0E1715; --container:#16221F; --card:#142019; --fg:#E3EDEA; --muted:#93A6A1; --line:#26352F; --outline:#5F746E; --grid:#22302B;
+  --accent:#4FD1B8; --accent-tonal:#15403A; --on-accent:#04201A;
+  --red:#FFB4AB; --red-tonal:#4A1D19; --amber:#F2C45A; --amber-tonal:#3A2D0C; --green:#8FDB95; --green-tonal:#183A1D;
+  --orange:#FFB070; --purple:#D5AEF5; --blue:#9CC2FF; --inv:#DDE7E4; --on-inv:#141E1C; --scrim:rgba(0,0,0,.6); color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font:400 16px/1.4 var(--f);padding-inline:16px;padding-block:28px;display:flex;justify-content:center}
+.app{position:relative;width:100%;max-width:392px;height:820px;background:var(--surface);border-radius:32px;border:1px solid var(--line);overflow:hidden;display:flex;flex-direction:column}
+.sys{display:flex;justify-content:space-between;align-items:center;padding:10px 22px 0;font-size:12px;font-weight:500;font-variant-numeric:tabular-nums}
+.sys span:last-child{display:flex;gap:6px;align-items:center}
+.top{display:flex;align-items:center;justify-content:space-between;padding:10px 8px 0}
+.ib{width:48px;height:48px;border:0;border-radius:50%;background:none;color:var(--fg);display:grid;place-items:center;cursor:pointer;flex:none}
+.ib:hover{background:var(--container)}
+button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.scroll{flex:1;min-height:0;overflow-y:auto;padding:0 16px 12px}
+.who{padding:0 4px 14px}
+.who h1{margin:0;font:500 26px/1.2 var(--f)}
+.who h1 span{font:400 18px var(--te);color:var(--muted);margin-left:10px}
+.stt{display:inline-flex;align-items:center;gap:6px;margin-top:8px;padding:4px 12px;border-radius:10px;font:500 13px var(--f);background:var(--tn);color:var(--tc)}
+.stt i{width:8px;height:8px;border-radius:50%;background:var(--tc)}
+.red{--tn:var(--red-tonal);--tc:var(--red)}.amber{--tn:var(--amber-tonal);--tc:var(--amber)}.green{--tn:var(--green-tonal);--tc:var(--green)}
+.qty{border-radius:28px;padding:18px 20px;background:var(--tn);display:flex;flex-direction:column;gap:6px}
+.qty .lab{font:500 13px var(--f);letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+.qty .lab span{text-transform:none;letter-spacing:0;font-family:var(--te);margin-left:6px}
+.qty .v{font:700 40px/1.1 var(--f);font-variant-numeric:tabular-nums;letter-spacing:-.01em;color:var(--fg)}
+.qty .v small{font:500 20px var(--f);color:var(--muted);margin-left:6px}
+.qty .sub{font:500 15px var(--f);color:var(--tc)}
+.qty .sub2{font:400 13px var(--f);color:var(--muted)}
+.acts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.btn{height:52px;border-radius:26px;border:1px solid var(--outline);background:none;color:var(--accent);font:500 15px var(--te);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;min-width:0}
+.btn.fill{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:24px;padding:16px;margin-top:16px}
+.ch{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.ch h2{margin:0;font:500 16px var(--f)}
+.ch h2 span{display:block;font:400 13px var(--te);color:var(--muted)}
+.rd{font:700 18px var(--f);font-variant-numeric:tabular-nums;text-align:right;min-width:90px}
+.rd small{display:block;font:400 12px var(--f);color:var(--muted)}
+svg text{font-family:var(--f);fill:var(--muted)}
+.hit{fill:transparent;cursor:pointer}
+.key{display:flex;gap:14px;align-items:center;margin-top:6px;font:400 12px var(--f);color:var(--muted)}
+.key span{display:flex;align-items:center;gap:6px}
+.key .sw{width:10px;height:10px;border-radius:3px;background:var(--accent)}
+.key .dash{width:18px;height:0;border-top:2px dashed var(--orange)}
+.why{margin:12px 0 0;font:400 14px/1.5 var(--f);color:var(--muted)}
+.why b{color:var(--fg);font-weight:500;font-variant-numeric:tabular-nums}
+.info{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.info div{background:var(--container);border-radius:16px;padding:12px 14px}
+.info small{display:block;font:500 12px var(--f);letter-spacing:.03em;text-transform:uppercase;color:var(--muted)}
+.info b{font:700 17px var(--f);font-variant-numeric:tabular-nums}
+.sec{display:flex;justify-content:space-between;align-items:baseline;margin:20px 4px 4px}
+.sec h2{margin:0;font:500 18px var(--f)}
+.sec h2 span{font:400 14px var(--te);color:var(--muted);margin-left:6px}
+.list{list-style:none;margin:0;padding:0}
+.e{display:flex;gap:12px;align-items:center;padding:12px 4px;border-bottom:1px solid var(--line)}
+.e:last-child{border:0}
+.e .ic{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;flex:none;background:color-mix(in srgb,var(--c) 15%,transparent);color:var(--c)}
+.cash{--c:var(--green)}.credit{--c:var(--orange)}.stock{--c:var(--purple)}.count{--c:var(--blue)}
+.body{flex:1;min-width:0}
+.t{font:500 15px var(--f);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.t em{font-style:normal;color:var(--muted);font-weight:400}
+.d{font:400 12px var(--f);color:var(--muted)}
+.r{text-align:right;flex:none}
+.amt{font:700 15px var(--f);font-variant-numeric:tabular-nums}
+.amt.up{color:var(--green)}
+.rb{font:400 12px var(--f);color:var(--muted);font-variant-numeric:tabular-nums}
+.bar{display:grid;grid-template-columns:1fr 1fr 1fr;align-items:end;background:var(--container);padding:10px 12px 8px}
+.bar>button{background:none;border:0;display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--muted);font:500 12px var(--f);cursor:pointer;min-height:56px;justify-content:center}
+.pill{width:64px;height:32px;border-radius:16px;display:grid;place-items:center}
+.bar [aria-current=page]{color:var(--fg)}
+.bar [aria-current=page] .pill{background:var(--accent-tonal);color:var(--accent)}
+.speak{margin-top:-34px;color:var(--fg)!important}
+.speak .mic{width:68px;height:68px;border-radius:50%;background:var(--accent);color:var(--on-accent);display:grid;place-items:center;box-shadow:0 0 0 6px var(--container),0 6px 14px rgba(0,0,0,.25)}
+.gest{background:var(--container);padding:2px 0 8px;display:flex;justify-content:center}
+.gest i{width:110px;height:4px;border-radius:2px;background:var(--fg);opacity:.5}
+.scrim{position:absolute;inset:0;background:var(--scrim);opacity:0;pointer-events:none;transition:opacity .2s;z-index:5}
+.sheet{position:absolute;left:0;right:0;bottom:0;background:var(--surface);border-radius:28px 28px 0 0;padding:12px 20px calc(20px + env(safe-area-inset-bottom,0px));transform:translateY(105%);transition:transform .25s;z-index:6;max-height:92%;overflow-y:auto;visibility:hidden}
+.show .scrim{opacity:1;pointer-events:auto}
+.show .sheet{transform:none;visibility:visible}
+.grab{width:36px;height:4px;border-radius:2px;background:var(--outline);margin:0 auto 14px;opacity:.6}
+.sheet h3{margin:0 0 14px;font:500 20px var(--f)}
+.sheet h3 span{font:400 15px var(--te);color:var(--muted);margin-left:8px}
+.fld{margin-bottom:14px}
+.fld label{display:block;font:500 13px var(--f);color:var(--muted);margin:0 0 6px 4px}
+.in{width:100%;height:56px;border-radius:14px;border:1.5px solid var(--outline);background:var(--surface);color:var(--fg);padding:0 16px;font:400 17px var(--te)}
+.in:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.row2{display:flex;gap:10px}.row2 .fld{flex:1;min-width:0}
+.step{display:flex;gap:10px;align-items:center}
+.step .in{text-align:center;font:700 28px var(--f);height:64px}
+.sb{width:56px;height:56px;border-radius:50%;border:1.5px solid var(--outline);background:none;color:var(--accent);font:500 26px var(--f);cursor:pointer;flex:none}
+.msg{font:400 14px var(--f);color:var(--muted);margin:8px 4px 14px;min-height:20px}
+.units{display:flex;gap:6px;height:56px}
+.units button{flex:1;border-radius:14px;border:1.5px solid var(--outline);background:none;color:var(--fg);font:500 15px var(--f);cursor:pointer;min-width:0}
+.units button[aria-pressed=true]{background:var(--accent-tonal);border-color:var(--accent);color:var(--accent)}
+.tags{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px}
+.tag{display:flex;align-items:center;gap:4px;height:36px;padding:0 6px 0 14px;border-radius:10px;border:1px solid var(--line);font:400 15px var(--te)}
+.tag button{width:28px;height:28px;border:0;border-radius:50%;background:none;color:var(--muted);cursor:pointer;display:grid;place-items:center}
+.addrow{display:flex;gap:8px}.addrow .in{height:44px;font-size:15px}
+.addrow .btn{height:44px;padding:0 16px;flex:none}
+.srow{display:flex;gap:10px;margin-top:6px}
+.srow .btn{flex:1;height:52px}.srow .btn.fill{flex:2;font-size:16px}
+.danger{margin-top:16px;border-top:1px solid var(--line);padding-top:14px}
+.dbtn{height:44px;padding:0 16px;border-radius:22px;border:1px solid var(--line);background:none;color:var(--red);font:500 14px var(--f);cursor:pointer}
+.dbtn.yes{background:var(--red);border-color:var(--red);color:var(--surface)}
+.confirm{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font:500 14px var(--f);color:var(--red)}
+.toast{position:absolute;left:16px;right:16px;bottom:112px;background:var(--inv);color:var(--on-inv);border-radius:14px;padding:14px 16px;font:400 15px var(--f);opacity:0;transform:translateY(8px);transition:.2s;pointer-events:none;z-index:9}
+.toast.on{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+@media (max-width:440px){body{padding:0}.app{border-radius:0;border:0;height:100dvh;min-height:680px}}
+</style>
+
+<div class="app" id="app">
+  <div class="sys"><span>9:41</span><span aria-hidden="true">
+    <svg width="16" height="12" viewBox="0 0 24 18" fill="currentColor"><path d="M12 3C7.5 3 3.6 4.7 0.5 7.5L12 18 23.5 7.5C20.4 4.7 16.5 3 12 3z"/></svg>
+    <svg width="16" height="12" viewBox="0 0 24 18" fill="currentColor"><path d="M0 18h24V0z"/></svg>
+    <svg width="22" height="12" viewBox="0 0 28 14" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="1" width="23" height="12" rx="3"/><rect x="3" y="3" width="15" height="8" rx="1.5" fill="currentColor" stroke="none"/></svg>
+  </span></div>
+
+  <div class="top">
+    <button class="ib" aria-label="Back"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button>
+    <button class="ib" id="editBtn" aria-label="Edit item"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></button>
+  </div>
+
+  <div class="scroll">
+    <div class="who"><h1><b style="font-weight:500" id="nm">Rice</b><span id="nte">బియ్యం</span></h1><span class="stt" id="stt"></span></div>
+
+    <section class="qty" id="qty" aria-label="Current stock">
+      <div class="lab">In stock<span>ప్రస్తుత స్టాక్</span></div>
+      <div class="v" id="qv"></div>
+      <div class="sub" id="qs"></div>
+      <div class="sub2" id="q2"></div>
+    </section>
+
+    <div class="acts">
+      <button class="btn fill" id="cntBtn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3 8-8M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"/></svg>Correct count</button>
+      <button class="btn" id="resBtn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Restock · స్టాక్</button>
+    </div>
+
+    <section class="card" aria-label="Daily use">
+      <div class="ch"><h2>Daily use<span>రోజువారీ వినియోగం · last 14 days</span></h2><div class="rd" id="rd"></div></div>
+      <div id="chart"></div>
+      <div class="key"><span><i class="sw"></i>Used per day</span><span><i class="dash"></i>Weighted average</span></div>
+      <p class="why" id="why"></p>
+    </section>
+
+    <div class="info"><div><small>Turns red at</small><b id="rl"></b></div><div><small>Price</small><b id="pr"></b></div></div>
+
+    <div class="sec"><h2>History<span>చరిత్ర</span></h2></div>
+    <ul class="list" id="list"></ul>
+  </div>
+
+  <nav class="bar" aria-label="Main">
+    <button><span class="pill"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3 3 10.5V21h6v-6h6v6h6V10.5z"/></svg></span>Home</button>
+    <button class="speak" aria-label="Speak"><span class="mic"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v4"/></svg></span>Speak</button>
+    <button aria-current="page"><span class="pill"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg></span>More</button>
+  </nav>
+  <div class="gest"><i></i></div>
+
+  <div class="scrim" id="scrim"></div>
+
+  <div class="sheet" id="cntSheet" role="dialog" aria-label="Correct count">
+    <div class="grab"></div><h3>Correct count<span>లెక్క సరిచేయండి</span></h3>
+    <div class="fld"><label for="cq">How much is in the shop now?</label>
+      <div class="step"><button class="sb" id="cm" type="button" aria-label="Less">−</button><input class="in" id="cq" inputmode="decimal" autocomplete="off"><button class="sb" id="cp" type="button" aria-label="More">+</button></div></div>
+    <div class="msg" id="cmsg"></div>
+    <div class="srow"><button class="btn" id="cCancel" type="button">Cancel</button><button class="btn fill" id="cSave" type="button">Save count</button></div>
+  </div>
+
+  <div class="sheet" id="editSheet" role="dialog" aria-label="Edit item">
+    <div class="grab"></div><h3>Edit item<span>మార్చు</span></h3>
+    <div class="fld"><label for="eN">Name</label><input class="in" id="eN" autocomplete="off"></div>
+    <div class="fld"><label for="eT">Name in Telugu · తెలుగులో పేరు</label><input class="in" id="eT" autocomplete="off"></div>
+    <div class="fld"><label>Other spoken names · ఇతర పేర్లు</label>
+      <div class="tags" id="tags"></div>
+      <div class="addrow"><input class="in" id="eA" placeholder="Add a spelling, e.g. biyyam" autocomplete="off"><button class="btn" id="eAdd" type="button">Add</button></div></div>
+    <div class="fld"><label id="ul">Unit</label><div class="units" id="units" role="group" aria-labelledby="ul"></div></div>
+    <div class="row2">
+      <div class="fld"><label for="eR">Turns red at</label><input class="in" id="eR" inputmode="decimal" autocomplete="off"></div>
+      <div class="fld"><label for="eP">Price per unit (₹)</label><input class="in" id="eP" inputmode="numeric" autocomplete="off"></div>
+    </div>
+    <div class="srow"><button class="btn" id="eCancel" type="button">Cancel</button><button class="btn fill" id="eSave" type="button">Save</button></div>
+    <div class="danger" id="danger"></div>
+  </div>
+
+  <div class="toast" id="toast" role="status"></div>
+</div>
+
+<script>
+/* Sample data (examples). use = kg used per day for the last 14 days, oldest first, today last. */
+var qty=3,unit='kg',reorder=5,price=60,tags=['biyyam','rice','బియ్యం'];
+var use=[2,2,3,2,2,3,2,3,3,2,3,3,3,3];
+var H=[
+ {d:'Fri 9 Oct',k:'cash',n:'Cash sale',x:-3,a:'₹180'},
+ {d:'Thu 8 Oct',k:'credit',n:'Credit sale · Lakshmi',x:-2,a:'₹120'},
+ {d:'Wed 7 Oct',k:'cash',n:'Cash sale',x:-2,a:'₹120'},
+ {d:'Sat 3 Oct',k:'count',n:'Weekly check · counted 12 kg',x:null,a:''},
+ {d:'Mon 28 Sep',k:'stock',n:'Restock',x:50,a:'₹2,600'}];
+var $=function(i){return document.getElementById(i)};
+function inr(v){return '₹'+v.toLocaleString('en-IN')}
+var tt;function toast(m){var t=$('toast');t.textContent=m;t.classList.add('on');clearTimeout(tt);tt=setTimeout(function(){t.classList.remove('on')},2400)}
+function wavg(){var s=0,w=0;use.forEach(function(v,i){s+=v*(i+1);w+=i+1});return s/w}
+function status(q){var d=q/wavg();return d<=2?['red','Low · తక్కువ',d]:d<=6?['amber','Getting low',d]:['green','Fine',d]}
+function dleft(d){return d<1.5?'about 1 day':'about '+Math.round(d)+' days'}
+var NS='http://www.w3.org/2000/svg';
+function el(n,a,p){var e=document.createElementNS(NS,n);for(var k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e}
+function dateOf(i){var d=new Date(2026,9,10-(13-i));return d.toLocaleDateString('en-IN',{day:'numeric',month:'short'})}
+function chart(){
+  var box=$('chart');box.textContent='';var W=300,H2=140,L=30,R=8,T=8,B=22,mx=5,n=use.length,slot=(W-L-R)/n,bw=slot-6;
+  var svg=el('svg',{viewBox:'0 0 '+W+' '+H2,width:'100%',role:'img','aria-label':'Bar chart of kilograms used each day for 14 days'});box.appendChild(svg);
+  function Y(v){return T+(1-v/mx)*(H2-T-B)}
+  [0,2,4].forEach(function(g){el('line',{x1:L,x2:W-R,y1:Y(g),y2:Y(g),stroke:'var(--grid)','stroke-width':1},svg);el('text',{x:L-6,y:Y(g)+3,'font-size':9,'text-anchor':'end'},svg).textContent=g+(g===4?' kg':'')});
+  var bars=[];use.forEach(function(v,i){var x=L+i*slot+3;bars.push(el('rect',{x:x,y:Y(v),width:bw,height:Y(0)-Y(v),rx:3,fill:'var(--accent)'},svg))});
+  var a=wavg();el('line',{x1:L,x2:W-R,y1:Y(a),y2:Y(a),stroke:'var(--orange)','stroke-width':2,'stroke-dasharray':'5 4'},svg);
+  [[0,'27 Sep'],[6,'3 Oct'],[13,'Today']].forEach(function(p){el('text',{x:L+p[0]*slot+slot/2,y:H2-6,'font-size':9,'text-anchor':p[0]===0?'start':p[0]===13?'end':'middle'},svg).textContent=p[1]});
+  var rd=$('rd');function show(i){bars.forEach(function(b,j){b.setAttribute('opacity',j===i?1:.45)});rd.innerHTML='';rd.appendChild(document.createTextNode(use[i]+' '+unit));var s=document.createElement('small');s.textContent=i===13?'Today':dateOf(i);rd.appendChild(s)}
+  function reset(){bars.forEach(function(b){b.setAttribute('opacity',1)});rd.innerHTML='';rd.appendChild(document.createTextNode(a.toFixed(1)+' '+unit+'/day'));var s=document.createElement('small');s.textContent='weighted average';rd.appendChild(s)}
+  use.forEach(function(v,i){var r=el('rect',{x:L+i*slot,y:0,width:slot,height:H2-B,class:'hit'},svg);r.addEventListener('mouseenter',function(){show(i)});r.addEventListener('click',function(){show(i)});r.addEventListener('mouseleave',reset)});reset();
+}
+var ICON={cash:'<rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/>',credit:'<path d="M12 6v6l4 2M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0"/>',stock:'<path d="M21 8 12 3 3 8v8l9 5 9-5zM3 8l9 5 9-5M12 13v8"/>',count:'<path d="M9 11l3 3 8-8M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"/>'};
+function render(){
+  var s=status(qty),a=wavg();
+  var q=$('qty');q.className='qty '+s[0];var st=$('stt');st.className='stt '+s[0];st.textContent='';var dot=document.createElement('i');st.appendChild(dot);st.appendChild(document.createTextNode(s[1]));
+  $('qv').textContent=qty;var u=document.createElement('small');u.textContent=unit;$('qv').appendChild(u);
+  $('qs').textContent='Lasts '+dleft(s[2]);$('q2').textContent='Based on '+a.toFixed(1)+' '+unit+' used per day';
+  $('why').innerHTML='';[['Why '+s[1].split(' ·')[0].toLowerCase()+'? At ',null],[a.toFixed(1)+' '+unit+'/day','b'],[', '+qty+' '+unit+' lasts ',null],[dleft(s[2]),'b'],['. Recent days count more than older days.',null]].forEach(function(p){if(p[1]){var b=document.createElement('b');b.textContent=p[0];$('why').appendChild(b)}else $('why').appendChild(document.createTextNode(p[0]))});
+  $('nm').textContent=$('nm').textContent;$('rl').textContent=reorder+' '+unit;$('pr').textContent=inr(price)+'/'+unit;
+  var ul=$('list');ul.textContent='';
+  H.forEach(function(h){var li=document.createElement('li');li.className='e '+h.k;
+    li.innerHTML='<span class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+ICON[h.k]+'</svg></span><div class="body"><div class="t"></div><div class="d"></div></div><div class="r"><div class="amt"></div><div class="rb"></div></div>';
+    li.querySelector('.t').textContent=h.n;li.querySelector('.d').textContent=h.d;
+    var am=li.querySelector('.amt');if(h.x!==null){am.textContent=(h.x>0?'+':'−')+Math.abs(h.x)+' '+unit;if(h.x>0)am.className='amt up'}
+    li.querySelector('.rb').textContent=h.a;ul.appendChild(li)});
+  chart();
+}
+function sheet(id,on){$('app').classList.toggle('show',on);['cntSheet','editSheet'].forEach(function(s){$(s).style.display=(on&&s===id)?'block':'none'})}
+['cntSheet','editSheet'].forEach(function(s){$(s).style.display='none'});
+$('scrim').addEventListener('click',function(){$('app').classList.remove('show')});
+/* Correct count */
+function prev(){var v=parseFloat($('cq').value);if(isNaN(v)||v<0){$('cmsg').textContent='Enter the amount in the shop.';return null}var s=status(v);$('cmsg').textContent='Status after saving: '+s[1].split(' ·')[0]+', lasts '+dleft(s[2])+'.';return v}
+$('cntBtn').addEventListener('click',function(){$('cq').value=qty;prev();sheet('cntSheet',true);$('cq').focus()});
+$('cq').addEventListener('input',prev);
+$('cm').addEventListener('click',function(){var v=parseFloat($('cq').value)||0;$('cq').value=Math.max(0,v-1);prev()});
+$('cp').addEventListener('click',function(){var v=parseFloat($('cq').value)||0;$('cq').value=v+1;prev()});
+$('cCancel').addEventListener('click',function(){sheet('',false)});
+$('cSave').addEventListener('click',function(){var v=prev();if(v===null)return;qty=v;H.unshift({d:'Sat 10 Oct (today)',k:'count',n:'Count corrected to '+v+' '+unit,x:null,a:''});render();sheet('',false);toast('Count saved · లెక్క సేవ్ చేయబడింది')});
+$('resBtn').addEventListener('click',function(){toast('Opens Confirm entry as Restock · '+$('nm').textContent)});
+/* Edit item */
+function tagsRender(){var t=$('tags');t.textContent='';tags.forEach(function(x,i){var d=document.createElement('span');d.className='tag';d.appendChild(document.createTextNode(x));var b=document.createElement('button');b.type='button';b.setAttribute('aria-label','Remove '+x);
+  b.innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>';b.addEventListener('click',function(){tags.splice(i,1);tagsRender()});d.appendChild(b);t.appendChild(d)})}
+var uw=$('units'),eu='kg';
+function unitsRender(){uw.textContent='';['kg','L','pcs'].forEach(function(u){var b=document.createElement('button');b.type='button';b.textContent=u;b.setAttribute('aria-pressed',u===eu);b.addEventListener('click',function(){eu=u;unitsRender()});uw.appendChild(b)})}
+$('eAdd').addEventListener('click',function(){var v=$('eA').value.trim();if(v&&tags.indexOf(v)<0){tags.push(v);tagsRender()}$('eA').value=''});
+$('editBtn').addEventListener('click',function(){$('eN').value=$('nm').textContent;$('eT').value=$('nte').textContent;$('eR').value=reorder;$('eP').value=price;eu=unit;tagsRender();unitsRender();dangerIdle();sheet('editSheet',true)});
+$('eCancel').addEventListener('click',function(){sheet('',false)});
+$('eSave').addEventListener('click',function(){var n=$('eN').value.trim();if(!n){$('eN').focus();return}
+  $('nm').textContent=n;$('nte').textContent=$('eT').value.trim();unit=eu;reorder=parseFloat($('eR').value)||reorder;price=parseInt($('eP').value,10)||price;render();sheet('',false);toast('Item updated · మార్చబడింది')});
+function dangerIdle(){var d=$('danger');d.textContent='';var b=document.createElement('button');b.type='button';b.className='dbtn';b.textContent='Delete item';b.addEventListener('click',dangerAsk);d.appendChild(b)}
+function dangerAsk(){var d=$('danger');d.textContent='';var w=document.createElement('div');w.className='confirm';w.innerHTML='<span>Delete item and its history?</span>';
+  var c=document.createElement('button');c.type='button';c.className='dbtn';c.style.color='var(--fg)';c.textContent='Cancel';c.addEventListener('click',dangerIdle);
+  var y=document.createElement('button');y.type='button';y.className='dbtn yes';y.textContent='Delete';y.addEventListener('click',function(){sheet('',false);toast('Item deleted (sample)')});
+  w.appendChild(c);w.appendChild(y);d.appendChild(w)}
+render();
+</script>
+
+</body></html>

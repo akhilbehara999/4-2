@@ -1,0 +1,182 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>LOG Home Screen</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Noto+Sans+Telugu:wght@400;500;700&display=swap">
+<style>
+/* Layout: Android (Material 3) home. Top app bar, date + Telugu heading, two chart tiles side by side, recent activity list, bottom bar with a raised centre Speak button. Follows the user's hand sketch. */
+:root{
+  --bg:#E4EAE9; --surface:#F9FBFB; --container:#EDF2F1; --card:#FFFFFF; --fg:#141E1C; --muted:#5C6D69; --line:#DAE3E1; --grid:#E3EAE8;
+  --accent:#0B6E5F; --accent-tonal:#D3ECE6; --on-accent:#FFFFFF;
+  --c-credit:#3B73C9; --c-exp:#D9731A; --c-profit:#0B8F7A;
+  --red:#B3261E; --blue:#1D5CB8; --purple:#7A3FB0; --orange:#B85A00; --green:#0B6E5F;
+  --f:'Roboto','Noto Sans Telugu',system-ui,sans-serif; --te:'Noto Sans Telugu','Roboto',system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#070C0B; --surface:#0E1715; --container:#16221F; --card:#142019; --fg:#E3EDEA; --muted:#93A6A1; --line:#26352F; --grid:#22302B;
+  --accent:#4FD1B8; --accent-tonal:#15403A; --on-accent:#04201A;
+  --c-credit:#7FA9EE; --c-exp:#F0A060; --c-profit:#4FD1B8;
+  --red:#FFB4AB; --blue:#9CC2FF; --purple:#D5AEF5; --orange:#FFB070; --green:#4FD1B8; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#070C0B; --surface:#0E1715; --container:#16221F; --card:#142019; --fg:#E3EDEA; --muted:#93A6A1; --line:#26352F; --grid:#22302B;
+  --accent:#4FD1B8; --accent-tonal:#15403A; --on-accent:#04201A;
+  --c-credit:#7FA9EE; --c-exp:#F0A060; --c-profit:#4FD1B8;
+  --red:#FFB4AB; --blue:#9CC2FF; --purple:#D5AEF5; --orange:#FFB070; --green:#4FD1B8; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font:400 16px/1.4 var(--f);padding-inline:16px;padding-block:28px;display:flex;justify-content:center}
+.app{width:100%;max-width:392px;background:var(--surface);border-radius:32px;border:1px solid var(--line);overflow:hidden;display:flex;flex-direction:column;position:relative}
+.sys{display:flex;justify-content:space-between;align-items:center;padding:10px 22px 0;font-size:12px;font-weight:500;color:var(--fg);font-variant-numeric:tabular-nums}
+.sys span:last-child{display:flex;gap:6px;align-items:center}
+.top{display:flex;align-items:center;justify-content:space-between;padding:14px 12px 6px 20px;gap:8px}
+.top h1{margin:0;font:700 26px/1 var(--f);letter-spacing:.08em;color:var(--accent)}
+.shop{margin:4px 0 0;font:400 13px var(--te);color:var(--muted)}
+.ib{width:48px;height:48px;border:0;border-radius:50%;background:none;color:var(--fg);display:grid;place-items:center;cursor:pointer;flex:none}
+.ib:hover{background:var(--container)}
+button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+main{padding:6px 16px 8px}
+.date{font:500 13px var(--f);color:var(--muted);letter-spacing:.02em}
+.h{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin:2px 0 14px}
+.h h2{margin:0;font:700 22px/1.3 var(--f)}
+.h span{font:500 17px var(--te);color:var(--muted)}
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.tile{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:14px 12px 12px;min-width:0;display:flex;flex-direction:column;gap:6px}
+.tt{font:500 12px var(--f);color:var(--muted);letter-spacing:.03em;text-transform:uppercase}
+.tt span{display:block;text-transform:none;font:400 12px var(--te);letter-spacing:0}
+.big{font:700 20px var(--f);font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.big small{font:400 11px var(--f);color:var(--muted);letter-spacing:0;margin-left:4px}
+svg text{font-family:var(--f);fill:var(--muted)}
+.hit{fill:transparent;cursor:pointer}
+.legend{display:flex;flex-direction:column;gap:4px;margin-top:2px}
+.legend div{display:flex;align-items:center;gap:6px;font-size:12px;min-width:0}
+.legend i{width:8px;height:8px;border-radius:50%;flex:none}
+.legend b{margin-left:auto;font-weight:500;font-variant-numeric:tabular-nums}
+.legend em{font-style:normal;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sec{display:flex;align-items:center;justify-content:space-between;margin:22px 0 4px}
+.sec h3{margin:0;font:500 18px var(--f)}
+.sec h3 span{font:400 14px var(--te);color:var(--muted);margin-left:6px}
+.va{background:none;border:0;color:var(--accent);font:500 14px var(--f);cursor:pointer;height:40px;padding:0 8px;border-radius:20px;display:flex;align-items:center;gap:2px}
+.va:hover{background:var(--accent-tonal)}
+.list{list-style:none;margin:0;padding:0}
+.e{display:flex;gap:14px;align-items:center;padding:12px 0;border-bottom:1px solid var(--line)}
+.e:last-child{border:0}
+.av{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;flex:none;background:color-mix(in srgb,var(--c) 15%,transparent);color:var(--c)}
+.body{flex:1;min-width:0}
+.t{font-weight:500;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.t em{font-style:normal;color:var(--muted);font-weight:400}
+.s{font:italic 13px var(--te);color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.r{text-align:right;flex:none}
+.amt{font:700 15px var(--f);font-variant-numeric:tabular-nums}
+.ty{font:500 11px var(--te);color:var(--c);margin-top:2px}
+.credit{--c:var(--orange)}.cash{--c:var(--green)}.pay{--c:var(--blue)}.stock{--c:var(--purple)}.exp{--c:var(--red)}
+.bar{position:relative;display:grid;grid-template-columns:1fr 1fr 1fr;align-items:end;background:var(--container);padding:10px 12px 8px;margin-top:10px}
+.bar>button{background:none;border:0;display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--muted);font:500 12px var(--f);cursor:pointer;min-height:56px;justify-content:center}
+.pill{width:64px;height:32px;border-radius:16px;display:grid;place-items:center}
+.bar [aria-current=page]{color:var(--fg)}
+.bar [aria-current=page] .pill{background:var(--accent-tonal);color:var(--accent)}
+.speak{position:relative;margin-top:-34px;color:var(--fg)!important}
+.speak .mic{width:68px;height:68px;border-radius:50%;background:var(--accent);color:var(--on-accent);display:grid;place-items:center;box-shadow:0 0 0 6px var(--container),0 6px 14px rgba(0,0,0,.25);transition:background .2s}
+.speak.on .mic{background:var(--red);color:var(--surface)}
+.speak .bars{display:none;gap:3px;align-items:center;height:26px}
+.speak.on .bars{display:flex}.speak.on svg{display:none}
+.bars i{width:4px;height:8px;border-radius:2px;background:currentColor;animation:b .8s ease-in-out infinite}
+.bars i:nth-child(2){animation-delay:.1s}.bars i:nth-child(3){animation-delay:.2s}.bars i:nth-child(4){animation-delay:.3s}
+@keyframes b{50%{height:24px}}
+.gest{background:var(--container);padding:2px 0 8px;display:flex;justify-content:center}
+.gest i{width:110px;height:4px;border-radius:2px;background:var(--fg);opacity:.5}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+@media (max-width:440px){body{padding:0}.app{border-radius:0;border:0}}
+</style>
+
+<div class="app">
+  <div class="sys"><span>9:41</span><span aria-hidden="true">
+    <svg width="16" height="12" viewBox="0 0 24 18" fill="currentColor"><path d="M12 3C7.5 3 3.6 4.7 0.5 7.5L12 18 23.5 7.5C20.4 4.7 16.5 3 12 3z"/></svg>
+    <svg width="16" height="12" viewBox="0 0 24 18" fill="currentColor"><path d="M0 18h24V0z"/></svg>
+    <svg width="22" height="12" viewBox="0 0 28 14" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="1" width="23" height="12" rx="3"/><rect x="3" y="3" width="15" height="8" rx="1.5" fill="currentColor" stroke="none"/></svg>
+  </span></div>
+
+  <div class="top">
+    <div><h1>LOG</h1><p class="shop">శ్రీ లక్ష్మి కిరాణా · Sri Lakshmi Kirana</p></div>
+    <button class="ib" aria-label="Settings"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
+  </div>
+
+  <main>
+    <div class="date">Saturday, 10 Oct 2026</div>
+    <div class="h"><h2>Today's business</h2><span>ఈ రోజు వ్యాపారం</span></div>
+
+    <div class="tiles">
+      <section class="tile" aria-label="Weekly shop revenue">
+        <div class="tt">Weekly revenue<span>వారపు ఆదాయం</span></div>
+        <div class="big" id="lv">₹28,520</div>
+        <svg id="line" viewBox="0 0 150 96" width="100%" role="img" aria-label="Line chart of revenue for the last seven days"></svg>
+      </section>
+
+      <section class="tile" aria-label="Today's split">
+        <div class="tt">Today<span>ఈ రోజు</span></div>
+        <svg id="donut" viewBox="0 0 100 100" width="100%" style="max-width:110px;align-self:center" role="img" aria-label="Donut chart of today's credit, expenditure and profit"></svg>
+        <div class="legend" id="leg"></div>
+      </section>
+    </div>
+
+    <div class="sec"><h3>Recent activity<span>ఇటీవలి</span></h3><button class="va">View all<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m9 6 6 6-6 6"/></svg></button></div>
+    <ul class="list">
+      <li class="e credit"><span class="av"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6v6l4 2M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0"/></svg></span><div class="body"><div class="t">Ramesh · Rice <em>(5 kg)</em></div><div class="s">“రామేష్‌కి 5 కిలోల బియ్యం అప్పు”</div></div><div class="r"><div class="amt">₹300</div><div class="ty">ఉధార్ · Credit</div></div></li>
+      <li class="e cash"><span class="av"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/></svg></span><div class="body"><div class="t">Sugar <em>(2 kg)</em></div><div class="s">“రెండు కిలోల చక్కెర అమ్మాను”</div></div><div class="r"><div class="amt">₹120</div><div class="ty">నగదు · Cash</div></div></li>
+      <li class="e pay"><span class="av"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12l7 7 7-7"/></svg></span><div class="body"><div class="t">Lakshmi</div><div class="s">“లక్ష్మి ఐదు వందలు ఇచ్చింది”</div></div><div class="r"><div class="amt">₹500</div><div class="ty">జమ · Received</div></div></li>
+      <li class="e exp"><span class="av"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg></span><div class="body"><div class="t">Electricity</div><div class="s">“కరెంటు బిల్లు ఎనభై”</div></div><div class="r"><div class="amt">₹80</div><div class="ty">ఖర్చు · Expense</div></div></li>
+    </ul>
+  </main>
+
+  <nav class="bar" aria-label="Main">
+    <button aria-current="page"><span class="pill"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3 3 10.5V21h6v-6h6v6h6V10.5z"/></svg></span>Home</button>
+    <button class="speak" id="speak" aria-pressed="false" aria-label="Speak"><span class="mic">
+      <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v4"/></svg>
+      <span class="bars"><i></i><i></i><i></i><i></i></span></span><span id="sl">Speak</span></button>
+    <button><span class="pill"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg></span>More</button>
+  </nav>
+  <div class="gest"><i></i></div>
+</div>
+
+<script>
+var NS='http://www.w3.org/2000/svg';
+function el(n,a,p){var e=document.createElementNS(NS,n);for(var k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e}
+function inr(v){return '₹'+v.toLocaleString('en-IN')}
+/* Example data (marked as sample): last 7 days of revenue, today = Saturday */
+var days=['S','M','T','W','T','F','S'],rev=[3600,3200,4100,3800,4700,4300,4820];
+var total=rev.reduce(function(a,b){return a+b},0),lv=document.getElementById('lv');
+var svg=document.getElementById('line'),X0=10,X1=140,Y0=66,YH=52,MAX=6000;
+function X(i){return X0+i*(X1-X0)/6}function Y(v){return Y0-v/MAX*YH}
+[0,3000,6000].forEach(function(g){el('line',{x1:X0-4,x2:X1+6,y1:Y(g),y2:Y(g),stroke:'var(--grid)','stroke-width':1},svg)});
+el('text',{x:X0-4,y:Y(6000)-3,'font-size':8},svg).textContent='₹6k';
+el('text',{x:X0-4,y:Y(3000)-3,'font-size':8},svg).textContent='₹3k';
+var d='M'+rev.map(function(v,i){return X(i)+' '+Y(v)}).join(' L');
+var defs=el('defs',{},svg),gr=el('linearGradient',{id:'ag',x1:0,y1:0,x2:0,y2:1},defs);
+el('stop',{offset:'0','stop-color':'var(--accent)','stop-opacity':.22},gr);el('stop',{offset:'1','stop-color':'var(--accent)','stop-opacity':0},gr);
+el('path',{d:d+' L'+X(6)+' '+Y0+' L'+X(0)+' '+Y0+'Z',fill:'url(#ag)'},svg);
+el('path',{d:d,fill:'none',stroke:'var(--accent)','stroke-width':2,'stroke-linejoin':'round','stroke-linecap':'round'},svg);
+var cur=el('line',{y1:6,y2:Y0,stroke:'var(--muted)','stroke-width':1,'stroke-dasharray':'2 2',opacity:0},svg);
+var dot=el('circle',{r:4,fill:'var(--accent)',stroke:'var(--card)','stroke-width':2},svg);
+days.forEach(function(l,i){el('text',{x:X(i),y:82,'font-size':9,'text-anchor':'middle'},svg).textContent=l});
+function sel(i){dot.setAttribute('cx',X(i));dot.setAttribute('cy',Y(rev[i]));cur.setAttribute('x1',X(i));cur.setAttribute('x2',X(i));cur.setAttribute('opacity',1);
+  lv.innerHTML=inr(rev[i])+'<small>'+['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][i]+'</small>'}
+function reset(){cur.setAttribute('opacity',0);dot.setAttribute('cx',X(6));dot.setAttribute('cy',Y(rev[6]));lv.innerHTML=inr(total)+'<small>7 days</small>'}
+rev.forEach(function(v,i){var r=el('rect',{x:X(i)-9,y:0,width:18,height:90,class:'hit'},svg);r.addEventListener('mouseenter',function(){sel(i)});r.addEventListener('click',function(){sel(i)});r.addEventListener('mouseleave',reset)});
+reset();
+
+/* Donut: today's credit, expenditure, profit */
+var parts=[{n:'Credit',te:'ఉధార్',v:1200,c:'var(--c-credit)'},{n:'Expenditure',te:'ఖర్చు',v:680,c:'var(--c-exp)'},{n:'Profit',te:'లాభం',v:2940,c:'var(--c-profit)'}];
+var sum=parts.reduce(function(a,p){return a+p.v},0),C=2*Math.PI*38,off=0,ds=document.getElementById('donut'),leg=document.getElementById('leg');
+el('circle',{cx:50,cy:50,r:38,fill:'none',stroke:'var(--grid)','stroke-width':12},ds);
+parts.forEach(function(p){var len=p.v/sum*C;
+  el('circle',{cx:50,cy:50,r:38,fill:'none',stroke:p.c,'stroke-width':12,'stroke-dasharray':(len-3)+' '+(C-len+3),'stroke-dashoffset':-off,transform:'rotate(-90 50 50)'},ds).appendChild(Object.assign(document.createElementNS(NS,'title'),{textContent:p.n+' '+inr(p.v)}));
+  off+=len;
+  var d=document.createElement('div');d.innerHTML='<i style="background:'+p.c+'"></i><em>'+p.n+'</em><b>'+inr(p.v)+'</b>';leg.appendChild(d)});
+el('text',{x:50,y:48,'font-size':8,'text-anchor':'middle'},ds).textContent='Sales';
+var t=el('text',{x:50,y:62,'font-size':14,'font-weight':700,'text-anchor':'middle'},ds);t.style.fill='var(--fg)';t.textContent=inr(sum);
+
+/* Speak button */
+var sp=document.getElementById('speak');
+sp.addEventListener('click',function(){var on=!sp.classList.contains('on');sp.classList.toggle('on',on);sp.setAttribute('aria-pressed',on);document.getElementById('sl').textContent=on?'Listening…':'Speak'});
+document.querySelectorAll('.bar>button:not(.speak)').forEach(function(b){b.addEventListener('click',function(){
+  document.querySelectorAll('.bar>button:not(.speak)').forEach(function(x){x.removeAttribute('aria-current')});b.setAttribute('aria-current','page')})});
+</script>
+
+</body></html>

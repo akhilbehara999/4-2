@@ -1,0 +1,193 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>LOG Listening Screen</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Noto+Sans+Telugu:wght@400;500;700&display=swap">
+<style>
+/* Layout: full-screen white voice screen opened by the Speak button. Close and language at the top, a large mic with ripples and a waveform in the middle, live words below, actions at the bottom. Four states: listening, understood, nothing heard, microphone blocked. The state buttons under the phone are a design preview only. */
+:root{
+  --bg:#E4EAE9; --white:#FFFFFF; --container:#EDF2F1; --fg:#141E1C; --muted:#5C6D69; --line:#DAE3E1; --outline:#8A9B97;
+  --accent:#0B6E5F; --accent-tonal:#D3ECE6; --on-accent:#FFFFFF; --red:#B3261E; --red-tonal:#FBE4E1; --amber:#8A5A00; --amber-tonal:#FCEFCF; --good:#2E7D32; --good-tonal:#DDF0DE;
+  --orange:#B85A00; --orange-tonal:#FCEBD9; --inv:#2B3532; --on-inv:#F1F6F4;
+  --f:'Roboto','Noto Sans Telugu',system-ui,sans-serif; --te:'Noto Sans Telugu','Roboto',system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#070C0B; --white:#0B1311; --container:#16221F; --fg:#E3EDEA; --muted:#93A6A1; --line:#26352F; --outline:#5F746E;
+  --accent:#4FD1B8; --accent-tonal:#15403A; --on-accent:#04201A; --red:#FFB4AB; --red-tonal:#4A1D19; --amber:#F2C45A; --amber-tonal:#3A2D0C; --good:#8FDB95; --good-tonal:#183A1D;
+  --orange:#FFB070; --orange-tonal:#3A2A18; --inv:#DDE7E4; --on-inv:#141E1C; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#070C0B; --white:#0B1311; --container:#16221F; --fg:#E3EDEA; --muted:#93A6A1; --line:#26352F; --outline:#5F746E;
+  --accent:#4FD1B8; --accent-tonal:#15403A; --on-accent:#04201A; --red:#FFB4AB; --red-tonal:#4A1D19; --amber:#F2C45A; --amber-tonal:#3A2D0C; --good:#8FDB95; --good-tonal:#183A1D;
+  --orange:#FFB070; --orange-tonal:#3A2A18; --inv:#DDE7E4; --on-inv:#141E1C; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font:400 16px/1.4 var(--f);padding-inline:16px;padding-block:28px;display:flex;flex-direction:column;align-items:center;gap:14px}
+.app{position:relative;width:100%;max-width:392px;height:800px;background:var(--white);border-radius:32px;border:1px solid var(--line);overflow:hidden;display:flex;flex-direction:column}
+.sys{display:flex;justify-content:space-between;align-items:center;padding:10px 22px 0;font-size:12px;font-weight:500;font-variant-numeric:tabular-nums}
+.sys span:last-child{display:flex;gap:6px;align-items:center}
+.top{display:flex;align-items:center;justify-content:space-between;padding:10px 8px 0 8px}
+.ib{width:48px;height:48px;border:0;border-radius:50%;background:none;color:var(--fg);display:grid;place-items:center;cursor:pointer;flex:none}
+.ib:hover{background:var(--container)}
+button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.lg{display:flex;align-items:center;gap:6px;height:32px;padding:0 14px;border-radius:16px;background:var(--container);font:500 13px var(--f);color:var(--muted);margin-right:8px}
+main{flex:1;min-height:0;display:flex;flex-direction:column;align-items:center;padding:6px 24px 8px;text-align:center}
+.status{margin-top:10px}
+.status h1{margin:0;font:500 26px/1.2 var(--f)}
+.status h1 span{display:block;font:400 18px var(--te);color:var(--muted);margin-top:2px}
+.stage{position:relative;width:200px;height:200px;margin:22px 0 4px;display:grid;place-items:center;flex:none}
+.ring{position:absolute;inset:0;border-radius:50%;background:var(--rc);opacity:0}
+.mic{position:relative;z-index:1;width:112px;height:112px;border-radius:50%;border:0;background:var(--mc);color:var(--mi);display:grid;place-items:center;cursor:pointer;transition:background .2s}
+.mic svg{width:48px;height:48px}
+.mic .ok,.mic .off{display:none}
+.wave{height:36px;display:flex;align-items:center;gap:5px;margin-bottom:6px}
+.wave i{width:5px;height:6px;border-radius:3px;background:var(--mc);opacity:.35}
+.txt{flex:1;min-height:0;width:100%;overflow-y:auto;display:flex;flex-direction:column;justify-content:flex-start;align-items:center;gap:12px;padding-top:6px}
+.said{font:500 26px/1.5 var(--te);overflow-wrap:anywhere}
+.said .int{color:var(--muted)}
+.hint{font:400 14px/1.5 var(--f);color:var(--muted);max-width:300px}
+.hint b{display:block;font:500 16px/1.5 var(--te);color:var(--fg);margin-top:6px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.chip{padding:6px 14px;border-radius:10px;background:var(--accent-tonal);color:var(--accent);font:500 14px var(--f);font-variant-numeric:tabular-nums}
+.chip.cr{background:var(--orange-tonal);color:var(--orange)}
+.note{display:flex;gap:10px;align-items:flex-start;text-align:left;border-radius:16px;padding:12px 14px;font:400 14px/1.45 var(--f);max-width:330px}
+.note.warn{background:var(--amber-tonal);color:var(--amber)}
+.note.bad{background:var(--red-tonal);color:var(--red)}
+.note svg{flex:none;margin-top:1px}
+.typed{display:flex;gap:8px;width:100%}
+.typed input{flex:1;min-width:0;height:56px;border-radius:28px;border:1.5px solid var(--outline);background:var(--white);color:var(--fg);padding:0 20px;font:400 17px var(--te)}
+.typed input:focus{outline:none;border-color:var(--accent)}
+.foot{display:flex;gap:10px;padding:10px 20px calc(16px + env(safe-area-inset-bottom,0px))}
+.btn{flex:1;height:56px;border-radius:28px;border:1px solid var(--outline);background:none;color:var(--accent);font:500 16px var(--te);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;min-width:0}
+.btn.fill{flex:1.4;background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.btn:disabled{opacity:.4;cursor:default}
+.gest{padding:0 0 8px;display:flex;justify-content:center}
+.gest i{width:110px;height:4px;border-radius:2px;background:var(--fg);opacity:.5}
+.toast{position:absolute;left:16px;right:16px;bottom:100px;background:var(--inv);color:var(--on-inv);border-radius:14px;padding:14px 16px;font:400 15px var(--f);opacity:0;transform:translateY(8px);transition:.2s;pointer-events:none;z-index:9}
+.toast.on{opacity:1;transform:none}
+
+/* states set the mic colours */
+.app{--mc:var(--red);--mi:var(--white);--rc:var(--red-tonal)}
+.app[data-s=done]{--mc:var(--accent);--mi:var(--on-accent);--rc:var(--accent-tonal)}
+.app[data-s=quiet]{--mc:var(--amber);--mi:var(--white);--rc:var(--amber-tonal)}
+.app[data-s=blocked]{--mc:var(--outline);--mi:var(--white);--rc:var(--container)}
+.app[data-s=listen] .ring{animation:rip 2.4s ease-out infinite}
+.app[data-s=listen] .ring:nth-child(2){animation-delay:.8s}
+.app[data-s=listen] .ring:nth-child(3){animation-delay:1.6s}
+@keyframes rip{0%{transform:scale(.56);opacity:.9}100%{transform:scale(1.05);opacity:0}}
+.app[data-s=listen] .wave i{opacity:1;animation:bar .9s ease-in-out infinite}
+.wave i:nth-child(2n){animation-delay:.12s}.wave i:nth-child(3n){animation-delay:.27s}.wave i:nth-child(5n){animation-delay:.4s}
+@keyframes bar{50%{height:34px}}
+.app[data-s=done] .mic .mc,.app[data-s=quiet] .mic .mc,.app[data-s=blocked] .mic .mc{display:none}
+.app[data-s=done] .mic .ok{display:block}
+.app[data-s=blocked] .mic .off{display:block}
+.prev{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
+.prev button{height:36px;padding:0 14px;border-radius:10px;border:1px solid var(--line);background:var(--white);color:var(--fg);font:500 13px var(--f);cursor:pointer}
+.prev button[aria-pressed=true]{background:var(--accent-tonal);border-color:transparent;color:var(--accent)}
+.plab{font:400 12px var(--f);color:var(--muted)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+@media (max-width:440px){body{padding:0}.app{border-radius:0;border:0;height:100dvh;min-height:640px}.prev,.plab{padding:0 16px 16px}}
+</style>
+
+<div class="app" id="app" data-s="listen">
+  <div class="sys"><span>9:41</span><span aria-hidden="true">
+    <svg width="16" height="12" viewBox="0 0 24 18" fill="currentColor"><path d="M12 3C7.5 3 3.6 4.7 0.5 7.5L12 18 23.5 7.5C20.4 4.7 16.5 3 12 3z"/></svg>
+    <svg width="16" height="12" viewBox="0 0 24 18" fill="currentColor"><path d="M0 18h24V0z"/></svg>
+    <svg width="22" height="12" viewBox="0 0 28 14" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="1" width="23" height="12" rx="3"/><rect x="3" y="3" width="15" height="8" rx="1.5" fill="currentColor" stroke="none"/></svg>
+  </span></div>
+
+  <div class="top">
+    <button class="ib" id="close" aria-label="Close"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+    <span class="lg"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>Telugu · te_IN</span>
+  </div>
+
+  <main>
+    <div class="status" aria-live="polite"><h1 id="h1"></h1></div>
+
+    <div class="stage">
+      <span class="ring"></span><span class="ring"></span><span class="ring"></span>
+      <button class="mic" id="mic" aria-label="Microphone">
+        <svg class="mc" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v4"/></svg>
+        <svg class="ok" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+        <svg class="off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v4M3 3l18 18"/></svg>
+      </button>
+    </div>
+    <div class="wave" id="wave" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+
+    <div class="txt" id="txt" aria-live="polite"></div>
+  </main>
+
+  <div class="foot" id="foot"></div>
+  <div class="gest"><i></i></div>
+  <div class="toast" id="toast" role="status"></div>
+</div>
+
+<div class="plab">Design preview, not part of the app:</div>
+<div class="prev" id="prev" role="group" aria-label="Preview state">
+  <button data-s="listen" aria-pressed="true">Listening</button><button data-s="done" aria-pressed="false">Understood</button><button data-s="quiet" aria-pressed="false">Nothing heard</button><button data-s="blocked" aria-pressed="false">Mic blocked</button>
+</div>
+
+<script>
+var $=function(i){return document.getElementById(i)};
+var WORDS=['రామేష్‌కి','5','కిలోల','బియ్యం','అప్పు','ఇచ్చాను,','300','రూపాయలు'],FULL=WORDS.join(' ');
+var state='listen',timers=[],typing=false;
+var TXT={listen:['Listening…','వింటున్నాను…'],done:['Got it','అర్థమైంది'],quiet:['I did not hear you','వినపడలేదు'],blocked:['Microphone is off','మైక్ ఆఫ్‌లో ఉంది']};
+var tt;function toast(m){var t=$('toast');t.textContent=m;t.classList.add('on');clearTimeout(tt);tt=setTimeout(function(){t.classList.remove('on')},2400)}
+function clr(){timers.forEach(clearTimeout);timers=[]}
+function btn(label,cls,fn,dis){var b=document.createElement('button');b.type='button';b.className='btn'+(cls?' '+cls:'');b.innerHTML=label;b.disabled=!!dis;b.addEventListener('click',fn);return b}
+function note(cls,svg,html){var d=document.createElement('div');d.className='note '+cls;d.innerHTML=svg+'<span>'+html+'</span>';return d}
+var WARN='<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 2 20h20zM12 10v4M12 17h.01"/></svg>';
+var ICK='<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>';
+var KB='<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h10"/></svg>';
+var MIC='<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v4"/></svg>';
+function set(s){
+  clr();typing=false;state=s;$('app').dataset.s=s;
+  $('h1').innerHTML='';$('h1').appendChild(document.createTextNode(TXT[s][0]));var sp=document.createElement('span');sp.textContent=TXT[s][1];$('h1').appendChild(sp);
+  document.querySelectorAll('#prev button').forEach(function(b){b.setAttribute('aria-pressed',b.dataset.s===s)});
+  $('wave').style.display=(s==='listen')?'flex':'none';
+  var t=$('txt'),f=$('foot');t.textContent='';f.textContent='';
+  if(s==='listen'){
+    var said=document.createElement('div');said.className='said';
+    var hint=document.createElement('div');hint.className='hint';hint.innerHTML='Say who, what, how much and the amount.<b>“రామేష్‌కి 5 కిలోల బియ్యం అప్పు, 300 రూపాయలు”</b>';
+    t.appendChild(said);t.appendChild(hint);
+    var i=0;(function step(){if(state!=='listen')return;
+      if(i<WORDS.length){hint.hidden=true;said.textContent='';said.appendChild(document.createTextNode(WORDS.slice(0,i).join(' ')+(i?' ':'')));var it=document.createElement('span');it.className='int';it.textContent=WORDS[i];said.appendChild(it);i++;timers.push(setTimeout(step,520))}
+      else{said.textContent=FULL;timers.push(setTimeout(function(){set('done')},1100))}})();
+    timers.push(setTimeout(step0,0));function step0(){}
+    f.appendChild(btn(KB+'Type instead',null,function(){typeMode()}));
+    f.appendChild(btn('Done · పూర్తి','fill',function(){set('done')}));
+  }
+  if(s==='done'){
+    var said2=document.createElement('div');said2.className='said';said2.textContent=FULL;
+    var pc=document.createElement('div');pc.className='chips';
+    [['Credit · ఉధార్','cr'],['Ramesh',''],['Rice',''],['5 kg',''],['₹300','']].forEach(function(c){var s2=document.createElement('span');s2.className='chip '+c[1];s2.textContent=c[0];pc.appendChild(s2)});
+    var h=document.createElement('div');h.className='hint';h.textContent='You can fix anything on the next screen.';
+    t.appendChild(said2);t.appendChild(pc);t.appendChild(h);
+    f.appendChild(btn(MIC+'Speak again',null,function(){set('listen')}));
+    f.appendChild(btn('Check entry · సరిచూడండి','fill',function(){toast('Opens Confirm entry')}));
+  }
+  if(s==='quiet'){
+    t.appendChild(note('warn',WARN,'Nothing came through. Move closer to the phone and speak after the mic turns red.'));
+    f.appendChild(btn(KB+'Type instead',null,function(){typeMode()}));
+    f.appendChild(btn(MIC+'Try again','fill',function(){set('listen')}));
+  }
+  if(s==='blocked'){
+    t.appendChild(note('bad',WARN,'LOG cannot use the microphone. Turn it on in your phone settings, or type your entry.'));
+    f.appendChild(btn(KB+'Type instead',null,function(){typeMode()}));
+    f.appendChild(btn('Open settings','fill',function(){toast('Opens the phone settings for LOG')}));
+  }
+}
+function typeMode(){
+  clr();typing=true;$('wave').style.display='none';
+  var t=$('txt'),f=$('foot');t.textContent='';f.textContent='';
+  $('h1').textContent='Type your entry';var sp=document.createElement('span');sp.textContent='టైప్ చేయండి';$('h1').appendChild(sp);
+  var form=document.createElement('form');form.className='typed';var inp=document.createElement('input');inp.id='ti';inp.placeholder='Ramesh ki 5 kg biyyam udhar 300 rs';inp.setAttribute('aria-label','Type your entry');inp.autocomplete='off';form.appendChild(inp);t.appendChild(form);
+  var h=document.createElement('div');h.className='hint';h.textContent='Telugu letters or English letters both work.';t.appendChild(h);
+  function go(){if(inp.value.trim())toast('Opens Confirm entry with “'+inp.value.trim()+'”');else inp.focus()}
+  form.addEventListener('submit',function(e){e.preventDefault();go()});
+  f.appendChild(btn(MIC+'Speak instead',null,function(){set('listen')}));f.appendChild(btn('Check entry · సరిచూడండి','fill',go));inp.focus();
+}
+$('mic').addEventListener('click',function(){if(state==='listen')set('done');else if(state==='blocked')toast('Microphone is blocked. Type instead or open settings.');else set('listen')});
+$('close').addEventListener('click',function(){toast('Closes and returns to the previous screen')});
+document.querySelectorAll('#prev button').forEach(function(b){b.addEventListener('click',function(){set(b.dataset.s)})});
+set('listen');
+</script>
+
+</body></html>

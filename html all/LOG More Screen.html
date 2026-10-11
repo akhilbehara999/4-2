@@ -1,0 +1,114 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>LOG More Screen</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Noto+Sans+Telugu:wght@400;500;700&display=swap">
+<style>
+/* Layout: Android (Material 3) "More" hub. Four large tonal tiles in a 2x2 grid (Udhar, Stock / Dashboard, Ask) as in the user's sketch, same bottom bar as Home with More selected. */
+:root{
+  --bg:#E4EAE9; --surface:#F9FBFB; --container:#EDF2F1; --fg:#141E1C; --muted:#5C6D69; --line:#DAE3E1;
+  --accent:#0B6E5F; --accent-tonal:#D3ECE6; --on-accent:#FFFFFF; --red:#B3261E;
+  --t-udhar:#FCEBD9; --i-udhar:#B85A00;
+  --t-stock:#EBDDF6; --i-stock:#7A3FB0;
+  --t-dash:#DCE8FA;  --i-dash:#1D5CB8;
+  --t-ask:#D3ECE6;   --i-ask:#0B6E5F;
+  --f:'Roboto','Noto Sans Telugu',system-ui,sans-serif; --te:'Noto Sans Telugu','Roboto',system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#070C0B; --surface:#0E1715; --container:#16221F; --fg:#E3EDEA; --muted:#93A6A1; --line:#26352F;
+  --accent:#4FD1B8; --accent-tonal:#15403A; --on-accent:#04201A; --red:#FFB4AB;
+  --t-udhar:#3A2A18; --i-udhar:#FFB070;
+  --t-stock:#2E2040; --i-stock:#D5AEF5;
+  --t-dash:#192B47;  --i-dash:#9CC2FF;
+  --t-ask:#15403A;   --i-ask:#4FD1B8; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#070C0B; --surface:#0E1715; --container:#16221F; --fg:#E3EDEA; --muted:#93A6A1; --line:#26352F;
+  --accent:#4FD1B8; --accent-tonal:#15403A; --on-accent:#04201A; --red:#FFB4AB;
+  --t-udhar:#3A2A18; --i-udhar:#FFB070;
+  --t-stock:#2E2040; --i-stock:#D5AEF5;
+  --t-dash:#192B47;  --i-dash:#9CC2FF;
+  --t-ask:#15403A;   --i-ask:#4FD1B8; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font:400 16px/1.4 var(--f);padding-inline:16px;padding-block:28px;display:flex;justify-content:center}
+.app{width:100%;max-width:392px;min-height:760px;background:var(--surface);border-radius:32px;border:1px solid var(--line);overflow:hidden;display:flex;flex-direction:column}
+.sys{display:flex;justify-content:space-between;align-items:center;padding:10px 22px 0;font-size:12px;font-weight:500;font-variant-numeric:tabular-nums}
+.sys span:last-child{display:flex;gap:6px;align-items:center}
+.top{padding:22px 20px 6px}
+.top h1{margin:0;font:500 28px/1.2 var(--f)}
+.top p{margin:2px 0 0;font:400 15px var(--te);color:var(--muted)}
+main{flex:1;padding:14px 16px 8px;display:grid;grid-template-columns:1fr 1fr;grid-auto-rows:1fr;gap:12px}
+.tile{position:relative;border:0;border-radius:28px;background:var(--bg-t);color:var(--fg);text-align:left;padding:18px 16px 16px;display:flex;flex-direction:column;cursor:pointer;min-height:0;min-width:0;font:inherit;transition:transform .12s,box-shadow .12s}
+.tile:active{transform:scale(.97)}
+.tile:hover{box-shadow:0 0 0 2px color-mix(in srgb,var(--ic) 40%,transparent)}
+.tile:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.ico{width:56px;height:56px;border-radius:18px;background:color-mix(in srgb,var(--ic) 16%,transparent);color:var(--ic);display:grid;place-items:center}
+.name{margin-top:auto;font:500 20px/1.2 var(--f)}
+.te{font:500 15px var(--te);color:var(--muted);margin-top:2px}
+.stat{margin-top:10px;font:500 13px/1.35 var(--f);color:var(--ic)}
+.stat.warn{color:var(--red)}
+.arrow{position:absolute;top:18px;right:14px;color:var(--muted)}
+.udhar{--bg-t:var(--t-udhar);--ic:var(--i-udhar)}
+.stock{--bg-t:var(--t-stock);--ic:var(--i-stock)}
+.dash{--bg-t:var(--t-dash);--ic:var(--i-dash)}
+.ask{--bg-t:var(--t-ask);--ic:var(--i-ask)}
+.bar{position:relative;display:grid;grid-template-columns:1fr 1fr 1fr;align-items:end;background:var(--container);padding:10px 12px 8px;margin-top:10px}
+.bar>button{background:none;border:0;display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--muted);font:500 12px var(--f);cursor:pointer;min-height:56px;justify-content:center}
+.bar>button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.pill{width:64px;height:32px;border-radius:16px;display:grid;place-items:center}
+.bar [aria-current=page]{color:var(--fg)}
+.bar [aria-current=page] .pill{background:var(--accent-tonal);color:var(--accent)}
+.speak{margin-top:-34px;color:var(--fg)!important}
+.speak .mic{width:68px;height:68px;border-radius:50%;background:var(--accent);color:var(--on-accent);display:grid;place-items:center;box-shadow:0 0 0 6px var(--container),0 6px 14px rgba(0,0,0,.25)}
+.gest{background:var(--container);padding:2px 0 8px;display:flex;justify-content:center}
+.gest i{width:110px;height:4px;border-radius:2px;background:var(--fg);opacity:.5}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+@media (max-width:440px){body{padding:0}.app{border-radius:0;border:0;min-height:100vh}}
+</style>
+
+<div class="app">
+  <div class="sys"><span>9:41</span><span aria-hidden="true">
+    <svg width="16" height="12" viewBox="0 0 24 18" fill="currentColor"><path d="M12 3C7.5 3 3.6 4.7 0.5 7.5L12 18 23.5 7.5C20.4 4.7 16.5 3 12 3z"/></svg>
+    <svg width="16" height="12" viewBox="0 0 24 18" fill="currentColor"><path d="M0 18h24V0z"/></svg>
+    <svg width="22" height="12" viewBox="0 0 28 14" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="1" width="23" height="12" rx="3"/><rect x="3" y="3" width="15" height="8" rx="1.5" fill="currentColor" stroke="none"/></svg>
+  </span></div>
+
+  <div class="top"><h1>More</h1><p>మరిన్ని</p></div>
+
+  <main>
+    <button class="tile udhar">
+      <svg class="arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M8 7h9v9"/></svg>
+      <span class="ico"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h12a4 4 0 0 1 4 4v12H8a4 4 0 0 1-4-4zM8 9h8M8 13h5"/></svg></span>
+      <span class="name">Udhar</span><span class="te">ఉధార్</span>
+      <span class="stat">₹12,450 to collect<br>8 customers</span>
+    </button>
+
+    <button class="tile stock">
+      <svg class="arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M8 7h9v9"/></svg>
+      <span class="ico"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M21 8 12 3 3 8v8l9 5 9-5zM3 8l9 5 9-5M12 13v8"/></svg></span>
+      <span class="name">Stock</span><span class="te">స్టాక్</span>
+      <span class="stat warn">3 items running low<br>Weekly check due</span>
+    </button>
+
+    <button class="tile dash">
+      <svg class="arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M8 7h9v9"/></svg>
+      <span class="ico"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></span>
+      <span class="name">Dashboard</span><span class="te">డాష్‌బోర్డ్</span>
+      <span class="stat">Sales, expenses<br>and profit</span>
+    </button>
+
+    <button class="tile ask">
+      <svg class="arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M8 7h9v9"/></svg>
+      <span class="ico"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12zM9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .8-1 1.4M12 16.5h.01"/></svg></span>
+      <span class="name">Ask</span><span class="te">అడగండి</span>
+      <span class="stat">Ask about your shop<br>in Telugu or English</span>
+    </button>
+  </main>
+
+  <nav class="bar" aria-label="Main">
+    <button><span class="pill"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3 3 10.5V21h6v-6h6v6h6V10.5z"/></svg></span>Home</button>
+    <button class="speak" aria-label="Speak"><span class="mic"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v4"/></svg></span>Speak</button>
+    <button aria-current="page"><span class="pill"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg></span>More</button>
+  </nav>
+  <div class="gest"><i></i></div>
+</div>
+
+</body></html>

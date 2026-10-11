@@ -1,0 +1,253 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>LOG Settings Screen</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Noto+Sans+Telugu:wght@400;500;700&display=swap">
+<style>
+/* Layout: Android (Material 3) settings. Back + title bar, grouped rows (shop, language and voice, reminders, appearance, data, manage, about), switches and a theme selector that really work, bottom sheets for choices, reminder time, shop profile and help. */
+:root{
+  --bg:#E4EAE9; --surface:#F9FBFB; --container:#EDF2F1; --fg:#141E1C; --muted:#5C6D69; --line:#DAE3E1; --outline:#8A9B97;
+  --accent:#0B6E5F; --accent-tonal:#D3ECE6; --on-accent:#FFFFFF; --red:#B3261E; --good:#2E7D32;
+  --inv:#2B3532; --on-inv:#F1F6F4; --scrim:rgba(0,0,0,.4);
+  --f:'Roboto','Noto Sans Telugu',system-ui,sans-serif; --te:'Noto Sans Telugu','Roboto',system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#070C0B; --surface:#0E1715; --container:#16221F; --fg:#E3EDEA; --muted:#93A6A1; --line:#26352F; --outline:#5F746E;
+  --accent:#4FD1B8; --accent-tonal:#15403A; --on-accent:#04201A; --red:#FFB4AB; --good:#8FDB95;
+  --inv:#DDE7E4; --on-inv:#141E1C; --scrim:rgba(0,0,0,.6); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#070C0B; --surface:#0E1715; --container:#16221F; --fg:#E3EDEA; --muted:#93A6A1; --line:#26352F; --outline:#5F746E;
+  --accent:#4FD1B8; --accent-tonal:#15403A; --on-accent:#04201A; --red:#FFB4AB; --good:#8FDB95;
+  --inv:#DDE7E4; --on-inv:#141E1C; --scrim:rgba(0,0,0,.6); color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font:400 16px/1.4 var(--f);padding-inline:16px;padding-block:28px;display:flex;justify-content:center}
+.app{position:relative;width:100%;max-width:392px;height:820px;background:var(--surface);border-radius:32px;border:1px solid var(--line);overflow:hidden;display:flex;flex-direction:column}
+.sys{display:flex;justify-content:space-between;align-items:center;padding:10px 22px 0;font-size:12px;font-weight:500;font-variant-numeric:tabular-nums}
+.sys span:last-child{display:flex;gap:6px;align-items:center}
+.top{display:flex;align-items:center;gap:4px;padding:10px 8px 4px}
+.top h1{margin:0;font:500 22px/1.2 var(--f)}
+.top h1 span{font:400 15px var(--te);color:var(--muted);margin-left:8px}
+.ib{width:48px;height:48px;border:0;border-radius:50%;background:none;color:var(--fg);display:grid;place-items:center;cursor:pointer;flex:none}
+.ib:hover{background:var(--container)}
+button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.scroll{flex:1;min-height:0;overflow-y:auto;padding:0 16px 16px}
+.gl{font:500 13px var(--f);letter-spacing:.04em;text-transform:uppercase;color:var(--accent);margin:18px 4px 8px}
+.gl span{text-transform:none;letter-spacing:0;font-family:var(--te);color:var(--muted);margin-left:6px}
+.grp{background:var(--container);border-radius:24px;overflow:hidden}
+.row{display:flex;align-items:center;gap:14px;padding:12px 16px;width:100%;min-height:64px;border:0;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer}
+.row+.row{border-top:1px solid var(--line)}
+button.row:hover{background:color-mix(in srgb,var(--fg) 5%,transparent)}
+.ic{width:40px;height:40px;border-radius:50%;background:var(--accent-tonal);color:var(--accent);display:grid;place-items:center;flex:none}
+.tx{flex:1;min-width:0}
+.t{font:500 16px var(--f)}
+.t span{font:400 14px var(--te);color:var(--muted);margin-left:6px}
+.s{font:400 14px/1.35 var(--f);color:var(--muted)}
+.v{font:400 14px var(--f);color:var(--muted);flex:none;max-width:44%;text-align:right}
+.chev{color:var(--muted);flex:none}
+.sw{position:relative;width:52px;height:32px;border-radius:16px;border:2px solid var(--outline);background:transparent;cursor:pointer;flex:none;padding:0;transition:.15s}
+.sw::after{content:"";position:absolute;top:6px;left:6px;width:16px;height:16px;border-radius:50%;background:var(--outline);transition:.15s}
+.sw[aria-checked=true]{background:var(--accent);border-color:var(--accent)}
+.sw[aria-checked=true]::after{left:24px;top:4px;width:24px;height:24px;background:var(--on-accent);left:22px}
+.seg{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--line);border-radius:20px;overflow:hidden;margin:0 16px 16px}
+.seg button{height:40px;border:0;background:none;color:var(--fg);font:500 14px var(--f);cursor:pointer}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button[aria-pressed=true]{background:var(--accent-tonal);color:var(--accent)}
+.apr{padding:14px 16px 8px}
+.note{font:400 13px/1.45 var(--f);color:var(--muted);margin:10px 8px 0}
+.bar{display:grid;grid-template-columns:1fr 1fr 1fr;align-items:end;background:var(--container);padding:10px 12px 8px}
+.bar>button{background:none;border:0;display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--muted);font:500 12px var(--f);cursor:pointer;min-height:56px;justify-content:center}
+.pill{width:64px;height:32px;border-radius:16px;display:grid;place-items:center}
+.bar [aria-current=page]{color:var(--fg)}
+.bar [aria-current=page] .pill{background:var(--accent-tonal);color:var(--accent)}
+.speak{margin-top:-34px;color:var(--fg)!important}
+.speak .mic{width:68px;height:68px;border-radius:50%;background:var(--accent);color:var(--on-accent);display:grid;place-items:center;box-shadow:0 0 0 6px var(--container),0 6px 14px rgba(0,0,0,.25)}
+.gest{background:var(--container);padding:2px 0 8px;display:flex;justify-content:center}
+.gest i{width:110px;height:4px;border-radius:2px;background:var(--fg);opacity:.5}
+.scrim{position:absolute;inset:0;background:var(--scrim);opacity:0;pointer-events:none;transition:opacity .2s;z-index:5}
+.sheet{position:absolute;left:0;right:0;bottom:0;background:var(--surface);border-radius:28px 28px 0 0;padding:12px 20px calc(20px + env(safe-area-inset-bottom,0px));transform:translateY(105%);transition:transform .25s;z-index:6;max-height:92%;overflow-y:auto;visibility:hidden}
+.show .scrim{opacity:1;pointer-events:auto}
+.show .sheet{transform:none;visibility:visible}
+.grab{width:36px;height:4px;border-radius:2px;background:var(--outline);margin:0 auto 14px;opacity:.6}
+.sheet h3{margin:0 0 14px;font:500 20px var(--f)}
+.sheet h3 span{font:400 15px var(--te);color:var(--muted);margin-left:8px}
+.fld{margin-bottom:14px}
+.fld label,.lab{display:block;font:500 13px var(--f);color:var(--muted);margin:0 0 6px 4px}
+.in{width:100%;height:56px;border-radius:14px;border:1.5px solid var(--outline);background:var(--surface);color:var(--fg);padding:0 16px;font:400 17px var(--te)}
+.in:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.opt{display:flex;align-items:center;gap:14px;width:100%;min-height:56px;padding:8px 4px;border:0;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer;border-radius:12px}
+.opt:hover{background:var(--container)}
+.rd{width:22px;height:22px;border-radius:50%;border:2px solid var(--outline);flex:none;display:grid;place-items:center}
+.opt[aria-checked=true] .rd{border-color:var(--accent)}
+.opt[aria-checked=true] .rd::after{content:"";width:10px;height:10px;border-radius:50%;background:var(--accent)}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.chip{height:40px;padding:0 16px;border-radius:12px;border:1px solid var(--line);background:none;color:var(--fg);font:500 14px var(--f);cursor:pointer}
+.chip[aria-pressed=true]{background:var(--accent-tonal);border-color:transparent;color:var(--accent)}
+.btn{height:52px;border-radius:26px;border:1px solid var(--outline);background:none;color:var(--accent);font:500 16px var(--f);cursor:pointer}
+.btn.fill{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.srow{display:flex;gap:10px;margin-top:6px}.srow .btn{flex:1}.srow .btn.fill{flex:2}
+.ex{list-style:none;margin:0 0 6px;padding:0}
+.ex li{padding:12px 0;border-bottom:1px solid var(--line)}
+.ex li:last-child{border:0}
+.ex q{display:block;font:500 16px/1.5 var(--te);quotes:none}
+.ex small{display:block;font:500 12px var(--f);color:var(--accent);margin-top:2px}
+.toast{position:absolute;left:16px;right:16px;bottom:112px;background:var(--inv);color:var(--on-inv);border-radius:14px;padding:14px 16px;font:400 15px var(--f);opacity:0;transform:translateY(8px);transition:.2s;pointer-events:none;z-index:9}
+.toast.on{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+@media (max-width:440px){body{padding:0}.app{border-radius:0;border:0;height:100dvh;min-height:680px}}
+</style>
+
+<div class="app" id="app">
+  <div class="sys"><span>9:41</span><span aria-hidden="true">
+    <svg width="16" height="12" viewBox="0 0 24 18" fill="currentColor"><path d="M12 3C7.5 3 3.6 4.7 0.5 7.5L12 18 23.5 7.5C20.4 4.7 16.5 3 12 3z"/></svg>
+    <svg width="16" height="12" viewBox="0 0 24 18" fill="currentColor"><path d="M0 18h24V0z"/></svg>
+    <svg width="22" height="12" viewBox="0 0 28 14" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="1" width="23" height="12" rx="3"/><rect x="3" y="3" width="15" height="8" rx="1.5" fill="currentColor" stroke="none"/></svg>
+  </span></div>
+
+  <div class="top">
+    <button class="ib" aria-label="Back"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button>
+    <h1>Settings<span>సెట్టింగ్‌లు</span></h1>
+  </div>
+
+  <div class="scroll">
+    <div class="gl">Shop<span>దుకాణం</span></div>
+    <div class="grp">
+      <button class="row" id="shopRow"><span class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l1.5-5h15L21 9M3 9v11h18V9M3 9a3 3 0 0 0 6 0 3 3 0 0 0 6 0 3 3 0 0 0 6 0M10 20v-5h4v5"/></svg></span>
+        <span class="tx"><div class="t">Shop profile<span>షాప్ ప్రొఫైల్</span></div><div class="s" id="shopSub"></div></span>
+        <svg class="chev" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m9 6 6 6-6 6"/></svg></button>
+    </div>
+
+    <div class="gl">Language and voice<span>భాష · వాయిస్</span></div>
+    <div class="grp">
+      <button class="row" id="langRow"><span class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg></span>
+        <span class="tx"><div class="t">App language<span>భాష</span></div></span><span class="v" id="langV">Telugu + English</span><svg class="chev" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m9 6 6 6-6 6"/></svg></button>
+      <button class="row" id="voiceRow"><span class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v4"/></svg></span>
+        <span class="tx"><div class="t">Voice language<span>వాయిస్ భాష</span></div></span><span class="v" id="voiceV">Telugu (te_IN)</span><svg class="chev" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m9 6 6 6-6 6"/></svg></button>
+      <button class="row" id="micRow"><span class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3 8-8M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"/></svg></span>
+        <span class="tx"><div class="t">Test microphone</div><div class="s" id="micS">Say a few words to check the app can hear you.</div></span></button>
+    </div>
+
+    <div class="gl">Reminders<span>రిమైండర్లు</span></div>
+    <div class="grp">
+      <div class="row"><span class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3 8-8M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"/></svg></span>
+        <button class="tx" id="timeBtn" style="border:0;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer;padding:0"><div class="t">Weekly stock check<span>వారం వారీ</span></div><div class="s" id="timeS"></div></button>
+        <button class="sw" id="swWeek" role="switch" aria-checked="true" aria-label="Weekly stock check"></button></div>
+      <div class="row"><span class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 2 20h20zM12 10v4M12 17h.01"/></svg></span>
+        <span class="tx"><div class="t">Low-stock alerts<span>స్టాక్ అలర్ట్</span></div><div class="s">Tell me when an item is running low.</div></span>
+        <button class="sw" role="switch" aria-checked="true" aria-label="Low-stock alerts"></button></div>
+      <div class="row"><span class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0"/></svg></span>
+        <span class="tx"><div class="t">Udhar overdue<span>బాకీ రిమైండర్</span></div><div class="s">Remind me when nobody has paid for 15 days.</div></span>
+        <button class="sw" role="switch" aria-checked="false" aria-label="Udhar overdue reminder"></button></div>
+    </div>
+
+    <div class="gl">Appearance<span>రూపం</span></div>
+    <div class="grp apr">
+      <div class="lab" id="thl">Theme</div>
+      <div class="seg" id="theme" role="group" aria-labelledby="thl" style="margin:0 0 8px">
+        <button data-t="" aria-pressed="true">System</button><button data-t="light" aria-pressed="false">Light</button><button data-t="dark" aria-pressed="false">Dark</button>
+      </div>
+    </div>
+
+    <div class="gl">Data and backup<span>డేటా · బ్యాకప్</span></div>
+    <div class="grp">
+      <button class="row" id="bkRow"><span class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M7 9l5-5 5 5M4 16v4h16v-4"/></svg></span>
+        <span class="tx"><div class="t">Back up now<span>బ్యాకప్</span></div><div class="s" id="bkS">Last backup: today, 9:12 AM</div></span></button>
+      <button class="row" id="exRow"><span class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9zM14 3v6h6M9 14h6M9 18h6"/></svg></span>
+        <span class="tx"><div class="t">Export data</div><div class="s">Save entries as a spreadsheet or PDF.</div></span></button>
+      <button class="row" id="rsRow"><span class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v4l3 2M3 12a9 9 0 1 0 3-6.7L3 8M3 3v5h5"/></svg></span>
+        <span class="tx"><div class="t">Restore from backup</div><div class="s">Replace this phone's data with a backup.</div></span></button>
+    </div>
+    <p class="note">LOG works without internet. All your entries stay on this phone.</p>
+
+    <div class="gl">Manage<span>నిర్వహణ</span></div>
+    <div class="grp">
+      <button class="row" data-go="Customers"><span class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2 20c0-4 3-6 7-6s7 2 7 6M16 4.5a3.5 3.5 0 0 1 0 7M18 14c2.5.6 4 2.4 4 6"/></svg></span><span class="tx"><div class="t">Customers<span>కస్టమర్లు</span></div></span><svg class="chev" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m9 6 6 6-6 6"/></svg></button>
+      <button class="row" data-go="Items"><span class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M21 8 12 3 3 8v8l9 5 9-5zM3 8l9 5 9-5M12 13v8"/></svg></span><span class="tx"><div class="t">Items<span>వస్తువులు</span></div></span><svg class="chev" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m9 6 6 6-6 6"/></svg></button>
+    </div>
+
+    <div class="gl">About<span>గురించి</span></div>
+    <div class="grp">
+      <button class="row" id="helpRow"><span class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .8-1 1.4M12 16.5h.01"/></svg></span><span class="tx"><div class="t">How to speak an entry<span>ఎలా చెప్పాలి</span></div></span><svg class="chev" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m9 6 6 6-6 6"/></svg></button>
+      <div class="row"><span class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg></span><span class="tx"><div class="t">LOG</div><div class="s">We Listen · Organise · Grow</div></span><span class="v">Version 1.0.0</span></div>
+    </div>
+  </div>
+
+  <nav class="bar" aria-label="Main">
+    <button aria-current="page"><span class="pill"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3 3 10.5V21h6v-6h6v6h6V10.5z"/></svg></span>Home</button>
+    <button class="speak" aria-label="Speak"><span class="mic"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v4"/></svg></span>Speak</button>
+    <button><span class="pill"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg></span>More</button>
+  </nav>
+  <div class="gest"><i></i></div>
+
+  <div class="scrim" id="scrim"></div>
+
+  <div class="sheet" id="shopSheet" role="dialog" aria-label="Shop profile">
+    <div class="grab"></div><h3>Shop profile<span>షాప్ ప్రొఫైల్</span></h3>
+    <div class="fld"><label for="sN">Shop name</label><input class="in" id="sN" autocomplete="off"></div>
+    <div class="fld"><label for="sT">Shop name in Telugu · తెలుగులో పేరు</label><input class="in" id="sT" autocomplete="off"></div>
+    <div class="fld"><label for="sO">Owner name</label><input class="in" id="sO" autocomplete="off"></div>
+    <div class="srow"><button class="btn" data-x type="button">Cancel</button><button class="btn fill" id="sSave" type="button">Save</button></div>
+  </div>
+
+  <div class="sheet" id="chSheet" role="dialog" aria-label="Choose">
+    <div class="grab"></div><h3 id="chT"></h3><div id="chO"></div>
+    <div class="srow"><button class="btn" data-x type="button">Close</button></div>
+  </div>
+
+  <div class="sheet" id="tmSheet" role="dialog" aria-label="Weekly check time">
+    <div class="grab"></div><h3>Weekly stock check<span>ఎప్పుడు?</span></h3>
+    <div class="lab">Day</div><div class="chips" id="days" role="group" aria-label="Day"></div>
+    <div class="lab">Time</div><div class="chips" id="times" role="group" aria-label="Time"></div>
+    <div class="srow"><button class="btn" data-x type="button">Cancel</button><button class="btn fill" id="tSave" type="button">Save</button></div>
+  </div>
+
+  <div class="sheet" id="hpSheet" role="dialog" aria-label="How to speak an entry">
+    <div class="grab"></div><h3>How to speak an entry<span>ఎలా చెప్పాలి</span></h3>
+    <ul class="ex">
+      <li><q>“రామేష్‌కి 5 కిలోల బియ్యం అప్పు ఇచ్చాను, 300 రూపాయలు”</q><small>Credit sale · ఉధార్</small></li>
+      <li><q>“రెండు కిలోల చక్కెర అమ్మాను, 120 రూపాయలు”</q><small>Cash sale · నగదు</small></li>
+      <li><q>“లక్ష్మి ఐదు వందలు ఇచ్చింది”</q><small>Payment received · జమ</small></li>
+      <li><q>“పప్పు ఇరవై ఐదు కిలోలు వచ్చింది”</q><small>Restock · స్టాక్</small></li>
+      <li><q>“కరెంటు బిల్లు ఎనభై”</q><small>Expense · ఖర్చు</small></li>
+      <li><q>Ramesh ki 5 kg biyyam udhar 300 rs</q><small>You can also type it in English letters</small></li>
+    </ul>
+    <div class="srow"><button class="btn fill" data-x type="button">Got it</button></div>
+  </div>
+
+  <div class="toast" id="toast" role="status"></div>
+</div>
+
+<script>
+var $=function(i){return document.getElementById(i)};
+var shop={n:'Sri Lakshmi Kirana',t:'శ్రీ లక్ష్మి కిరాణా',o:'Lakshmi Narayana'},wk={d:'Sunday',t:'8:00 AM'};
+var tt;function toast(m){var t=$('toast');t.textContent=m;t.classList.add('on');clearTimeout(tt);tt=setTimeout(function(){t.classList.remove('on')},2400)}
+function openS(id){['shopSheet','chSheet','tmSheet','hpSheet'].forEach(function(s){$(s).style.display=s===id?'block':'none'});$('app').classList.add('show')}
+function closeS(){$('app').classList.remove('show')}
+['shopSheet','chSheet','tmSheet','hpSheet'].forEach(function(s){$(s).style.display='none'});
+$('scrim').addEventListener('click',closeS);document.querySelectorAll('[data-x]').forEach(function(b){b.addEventListener('click',closeS)});
+function shopSub(){$('shopSub').textContent=shop.n+' · '+shop.t}shopSub();
+$('shopRow').addEventListener('click',function(){$('sN').value=shop.n;$('sT').value=shop.t;$('sO').value=shop.o;openS('shopSheet')});
+$('sSave').addEventListener('click',function(){var n=$('sN').value.trim();if(!n){$('sN').focus();return}shop={n:n,t:$('sT').value.trim(),o:$('sO').value.trim()};shopSub();closeS();toast('Shop profile saved')});
+function choose(title,opts,cur,set){$('chT').textContent=title;var o=$('chO');o.textContent='';opts.forEach(function(x){var b=document.createElement('button');b.type='button';b.className='opt';b.setAttribute('role','radio');b.setAttribute('aria-checked',x===cur);
+  b.innerHTML='<span class="rd"></span><span></span>';b.children[1].textContent=x;b.addEventListener('click',function(){set(x);closeS();toast('Saved')});o.appendChild(b)});openS('chSheet')}
+var lang='Telugu + English',voice='Telugu (te_IN)';
+$('langRow').addEventListener('click',function(){choose('App language · భాష',['Telugu + English','Telugu only','English only'],lang,function(x){lang=x;$('langV').textContent=x})});
+$('voiceRow').addEventListener('click',function(){choose('Voice language · వాయిస్ భాష',['Telugu (te_IN)','English (en_IN)'],voice,function(x){voice=x;$('voiceV').textContent=x})});
+var mt;$('micRow').addEventListener('click',function(){var s=$('micS');s.textContent='Listening… say something';clearTimeout(mt);mt=setTimeout(function(){s.textContent='Heard: “నమస్కారం”. Your microphone works.'},1500)});
+/* switches */
+document.querySelectorAll('.sw').forEach(function(b){b.addEventListener('click',function(e){e.stopPropagation();b.setAttribute('aria-checked',b.getAttribute('aria-checked')!=='true')})});
+function timeS(){$('timeS').textContent='Every '+wk.d+' at '+wk.t}timeS();
+var DAYS=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'],TIMES=['7:00 AM','8:00 AM','9:00 AM','6:00 PM','8:00 PM'],sd,st;
+function chipset(box,arr,get,set,short){box.textContent='';arr.forEach(function(x){var b=document.createElement('button');b.type='button';b.className='chip';b.textContent=short?x.slice(0,3):x;b.setAttribute('aria-pressed',x===get());b.addEventListener('click',function(){set(x);chipset(box,arr,get,set,short)});box.appendChild(b)})}
+$('timeBtn').addEventListener('click',function(){sd=wk.d;st=wk.t;chipset($('days'),DAYS,function(){return sd},function(x){sd=x},true);chipset($('times'),TIMES,function(){return st},function(x){st=x},false);openS('tmSheet')});
+$('tSave').addEventListener('click',function(){wk={d:sd,t:st};timeS();closeS();toast('Reminder set for '+sd+' at '+st)});
+/* theme */
+document.querySelectorAll('#theme button').forEach(function(b){b.addEventListener('click',function(){var t=b.dataset.t,r=document.documentElement;if(t)r.setAttribute('data-theme',t);else r.removeAttribute('data-theme');
+  document.querySelectorAll('#theme button').forEach(function(x){x.setAttribute('aria-pressed',x===b)})})});
+/* data */
+var bt;$('bkRow').addEventListener('click',function(){var s=$('bkS');s.textContent='Backing up…';clearTimeout(bt);bt=setTimeout(function(){s.textContent='Last backup: today, 9:41 AM';toast('Backup saved on this phone')},1200)});
+$('exRow').addEventListener('click',function(){toast('Choose spreadsheet or PDF (sample)')});
+$('rsRow').addEventListener('click',function(){toast('Pick a backup file to restore (sample)')});
+document.querySelectorAll('[data-go]').forEach(function(b){b.addEventListener('click',function(){toast('Opens '+b.dataset.go)})});
+$('helpRow').addEventListener('click',function(){openS('hpSheet')});
+</script>
+
+</body></html>

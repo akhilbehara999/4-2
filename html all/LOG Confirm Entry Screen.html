@@ -1,0 +1,166 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>LOG Confirm Entry Screen</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Noto+Sans+Telugu:wght@400;500;700&display=swap">
+<style>
+/* Layout: full-screen Android form shown after Speak or Parse. Close + title bar, what the app heard, entry type chips, only the fields that type needs, plain-language hints, Cancel and Save pinned at the bottom. No bottom nav, as in any confirm flow. */
+:root{
+  --bg:#E4EAE9; --surface:#F9FBFB; --container:#EDF2F1; --card:#FFFFFF; --fg:#141E1C; --muted:#5C6D69; --line:#DAE3E1; --outline:#8A9B97;
+  --accent:#0B6E5F; --accent-tonal:#D3ECE6; --on-accent:#FFFFFF; --red:#B3261E; --amber:#8A5A00; --amber-tonal:#FCEFCF; --good:#2E7D32; --good-tonal:#DDF0DE;
+  --inv:#2B3532; --on-inv:#F1F6F4;
+  --f:'Roboto','Noto Sans Telugu',system-ui,sans-serif; --te:'Noto Sans Telugu','Roboto',system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#070C0B; --surface:#0E1715; --container:#16221F; --card:#142019; --fg:#E3EDEA; --muted:#93A6A1; --line:#26352F; --outline:#5F746E;
+  --accent:#4FD1B8; --accent-tonal:#15403A; --on-accent:#04201A; --red:#FFB4AB; --amber:#F2C45A; --amber-tonal:#3A2D0C; --good:#8FDB95; --good-tonal:#183A1D;
+  --inv:#DDE7E4; --on-inv:#141E1C; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#070C0B; --surface:#0E1715; --container:#16221F; --card:#142019; --fg:#E3EDEA; --muted:#93A6A1; --line:#26352F; --outline:#5F746E;
+  --accent:#4FD1B8; --accent-tonal:#15403A; --on-accent:#04201A; --red:#FFB4AB; --amber:#F2C45A; --amber-tonal:#3A2D0C; --good:#8FDB95; --good-tonal:#183A1D;
+  --inv:#DDE7E4; --on-inv:#141E1C; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font:400 16px/1.4 var(--f);padding-inline:16px;padding-block:28px;display:flex;justify-content:center}
+.app{position:relative;width:100%;max-width:392px;height:800px;background:var(--surface);border-radius:32px;border:1px solid var(--line);overflow:hidden;display:flex;flex-direction:column}
+.sys{display:flex;justify-content:space-between;align-items:center;padding:10px 22px 0;font-size:12px;font-weight:500;font-variant-numeric:tabular-nums}
+.sys span:last-child{display:flex;gap:6px;align-items:center}
+.top{display:flex;align-items:center;gap:4px;padding:10px 8px 4px}
+.top h1{margin:0;font:500 22px/1.2 var(--f)}
+.top h1 span{font:400 15px var(--te);color:var(--muted);margin-left:8px}
+.ib{width:48px;height:48px;border:0;border-radius:50%;background:none;color:var(--fg);display:grid;place-items:center;cursor:pointer;flex:none}
+.ib:hover{background:var(--container)}
+button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+main{flex:1;min-height:0;overflow-y:auto;padding:6px 16px 16px;display:flex;flex-direction:column;gap:18px}
+.heard{background:var(--container);border-radius:24px;padding:16px;display:flex;flex-direction:column;gap:10px}
+.heard .lab{font:500 12px var(--f);letter-spacing:.04em;text-transform:uppercase;color:var(--muted);display:flex;justify-content:space-between;align-items:center}
+.heard .lab span{text-transform:none;letter-spacing:0;font-family:var(--te);margin-left:6px}
+.heard p{margin:0;font:500 19px/1.5 var(--te)}
+.again{align-self:flex-start;height:40px;padding:0 16px 0 12px;border-radius:20px;border:1px solid var(--line);background:none;color:var(--accent);font:500 14px var(--f);display:flex;align-items:center;gap:6px;cursor:pointer}
+.sec{font:500 13px var(--f);letter-spacing:.04em;text-transform:uppercase;color:var(--muted);margin:0 0 8px}
+.sec span{text-transform:none;letter-spacing:0;font-family:var(--te);margin-left:6px}
+.types{display:flex;flex-wrap:wrap;gap:8px}
+.chip{min-height:40px;padding:6px 14px;border-radius:12px;border:1px solid var(--line);background:none;color:var(--fg);font:500 14px var(--f);cursor:pointer;display:flex;flex-direction:column;align-items:flex-start;line-height:1.2}
+.chip small{font:400 12px var(--te);color:var(--muted)}
+.chip[aria-pressed=true]{background:var(--accent-tonal);border-color:transparent;color:var(--accent)}
+.chip[aria-pressed=true] small{color:var(--accent)}
+.form{display:flex;flex-direction:column;gap:14px}
+.fld label{display:block;font:500 13px var(--f);color:var(--muted);margin:0 0 6px 4px}
+.fld label span{font-family:var(--te);margin-left:6px;font-weight:400}
+.in{width:100%;height:56px;border-radius:14px;border:1.5px solid var(--outline);background:var(--surface);color:var(--fg);padding:0 16px;font:400 17px var(--te)}
+.in:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.row{display:flex;gap:10px}
+.row .fld{flex:1;min-width:0}
+.units{display:flex;gap:6px;height:56px;align-items:stretch}
+.units button{flex:1;border-radius:14px;border:1.5px solid var(--outline);background:none;color:var(--fg);font:500 15px var(--f);cursor:pointer;min-width:0}
+.units button[aria-pressed=true]{background:var(--accent-tonal);border-color:var(--accent);color:var(--accent)}
+.amt{position:relative}
+.amt b{position:absolute;left:16px;top:0;height:64px;display:flex;align-items:center;font:700 26px var(--f);color:var(--muted)}
+.amt .in{height:64px;padding-left:40px;font:700 28px var(--f);font-variant-numeric:tabular-nums}
+.hint{display:flex;gap:8px;align-items:flex-start;margin:8px 4px 0;font:400 13px/1.4 var(--f);color:var(--muted)}
+.hint svg{flex:none;margin-top:1px}
+.hint.ok{color:var(--good)}.hint.new{color:var(--amber)}
+.hint b{font-weight:500;font-variant-numeric:tabular-nums}
+.foot{display:flex;gap:10px;padding:12px 16px calc(14px + env(safe-area-inset-bottom,0px));background:var(--container)}
+.btn{height:52px;border-radius:26px;font:500 16px var(--f);cursor:pointer;border:1px solid var(--outline);background:none;color:var(--accent)}
+.btn.c{flex:1}.btn.s{flex:2;background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.gest{background:var(--container);padding:0 0 8px;display:flex;justify-content:center}
+.gest i{width:110px;height:4px;border-radius:2px;background:var(--fg);opacity:.5}
+.toast{position:absolute;left:16px;right:16px;bottom:96px;background:var(--inv);color:var(--on-inv);border-radius:14px;padding:14px 16px;font:400 15px var(--f);opacity:0;transform:translateY(8px);transition:.2s;pointer-events:none}
+.toast.on{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+@media (max-width:440px){body{padding:0}.app{border-radius:0;border:0;height:100dvh;min-height:640px}}
+</style>
+
+<div class="app">
+  <div class="sys"><span>9:41</span><span aria-hidden="true">
+    <svg width="16" height="12" viewBox="0 0 24 18" fill="currentColor"><path d="M12 3C7.5 3 3.6 4.7 0.5 7.5L12 18 23.5 7.5C20.4 4.7 16.5 3 12 3z"/></svg>
+    <svg width="16" height="12" viewBox="0 0 24 18" fill="currentColor"><path d="M0 18h24V0z"/></svg>
+    <svg width="22" height="12" viewBox="0 0 28 14" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="1" width="23" height="12" rx="3"/><rect x="3" y="3" width="15" height="8" rx="1.5" fill="currentColor" stroke="none"/></svg>
+  </span></div>
+
+  <div class="top">
+    <button class="ib" aria-label="Close"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+    <h1>Confirm entry<span>నిర్ధారించండి</span></h1>
+  </div>
+
+  <main>
+    <section class="heard" aria-label="What I heard">
+      <div class="lab"><div>I heard<span>విన్నది</span></div></div>
+      <p>“రామేష్‌కి 5 కిలోల బియ్యం అప్పు ఇచ్చాను, 300 రూపాయలు”</p>
+      <button class="again" id="again"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v4"/></svg>Wrong? Speak again</button>
+    </section>
+
+    <section>
+      <h2 class="sec">Entry type<span>రకం</span></h2>
+      <div class="types" id="types" role="group" aria-label="Entry type"></div>
+    </section>
+
+    <section class="form" id="form">
+      <div class="fld" data-for="credit pay">
+        <label for="cust">Customer<span>కస్టమర్</span></label>
+        <input class="in" id="cust" value="Ramesh" autocomplete="off">
+        <div class="hint" id="custHint"></div>
+      </div>
+      <div class="fld" data-for="credit cash stock exp">
+        <label for="item" id="itemLab">Item<span>వస్తువు</span></label>
+        <input class="in" id="item" value="Rice" autocomplete="off">
+      </div>
+      <div class="row" data-for="credit cash stock">
+        <div class="fld"><label for="qty">Quantity<span>పరిమాణం</span></label><input class="in" id="qty" inputmode="decimal" value="5"></div>
+        <div class="fld"><label id="ul">Unit<span>యూనిట్</span></label><div class="units" id="units" role="group" aria-labelledby="ul"></div></div>
+      </div>
+      <div class="fld">
+        <label for="amt">Amount<span>మొత్తం</span></label>
+        <div class="amt"><b>₹</b><input class="in" id="amt" inputmode="numeric" value="300"></div>
+        <div class="hint" id="amtHint"></div>
+      </div>
+      <div class="hint" id="stockHint" data-for="credit cash stock"></div>
+    </section>
+  </main>
+
+  <div class="foot"><button class="btn c" id="cancel">Cancel</button><button class="btn s" id="save">Save entry · సేవ్</button></div>
+  <div class="gest"><i></i></div>
+  <div class="toast" id="toast" role="status"></div>
+</div>
+
+<script>
+/* Sample data (examples). Known customers and their current udhar balance. */
+var KNOWN={'ramesh':4200,'lakshmi':1850,'venkat rao':2300,'suresh':950,'padma':1400};
+var TYPES=[['credit','Credit','ఉధార్'],['cash','Cash sale','నగదు'],['pay','Received','జమ'],['stock','Restock','స్టాక్'],['exp','Expense','ఖర్చు']];
+var type='credit',unit='kg';
+var $=function(i){return document.getElementById(i)};
+function inr(v){return '₹'+v.toLocaleString('en-IN')}
+var tw=$('types');
+TYPES.forEach(function(t){var b=document.createElement('button');b.type='button';b.className='chip';b.dataset.k=t[0];b.setAttribute('aria-pressed',t[0]===type);
+  b.innerHTML='<span></span><small></small>';b.children[0].textContent=t[1];b.children[1].textContent=t[2];
+  b.addEventListener('click',function(){type=t[0];tw.querySelectorAll('.chip').forEach(function(x){x.setAttribute('aria-pressed',x===b)});sync()});tw.appendChild(b)});
+var uw=$('units');
+['kg','L','pcs'].forEach(function(u){var b=document.createElement('button');b.type='button';b.textContent=u;b.setAttribute('aria-pressed',u===unit);
+  b.addEventListener('click',function(){unit=u;uw.querySelectorAll('button').forEach(function(x){x.setAttribute('aria-pressed',x===b)});sync()});uw.appendChild(b)});
+var ICON={ok:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>',
+          plus:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>',
+          info:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>'};
+function hint(el,cls,icon,parts){el.className='hint '+cls;el.textContent='';el.insertAdjacentHTML('beforeend',ICON[icon]);var s=document.createElement('span');
+  parts.forEach(function(p){if(p.b){var b=document.createElement('b');b.textContent=p.b;s.appendChild(b)}else s.appendChild(document.createTextNode(p))});el.appendChild(s)}
+function sync(){
+  document.querySelectorAll('[data-for]').forEach(function(e){e.hidden=e.dataset.for.split(' ').indexOf(type)<0});
+  $('itemLab').firstChild.nodeValue=type==='exp'?'What for':'Item';$('itemLab').querySelector('span').textContent=type==='exp'?'దేనికి':'వస్తువు';
+  var amt=parseInt($('amt').value.replace(/[^\d]/g,''),10)||0,name=$('cust').value.trim(),key=name.toLowerCase(),ch=$('custHint');
+  if(!name){hint(ch,'new','info',['Enter who this is for.'])}
+  else if(KNOWN[key]!==undefined){var bal=KNOWN[key],after=type==='pay'?Math.max(0,bal-amt):bal+amt;
+    hint(ch,'ok','ok',['Existing customer. Owes ',{b:inr(bal)},' now, ',{b:inr(after)},' after saving.'])}
+  else hint(ch,'new','plus',['New customer. ',{b:name},' will be added to Udhar.']);
+  var h=$('amtHint');
+  if(type==='credit')hint(h,'','info',['Given on credit. Nothing is paid today.']);else if(type==='cash')hint(h,'','info',['Paid in cash today.']);
+  else if(type==='pay')hint(h,'','info',['Reduces the customer\'s udhar balance.']);else if(type==='stock')hint(h,'','info',['Cost of the new stock.']);else hint(h,'','info',['Counted in today\'s expenses.']);
+  var it=$('item').value.trim(),q=$('qty').value.trim(),sh=$('stockHint');
+  if(it&&q&&type!=='pay'&&type!=='exp')hint(sh,'','info',[it+' stock will '+(type==='stock'?'increase':'reduce')+' by ',{b:q+' '+unit},'.']);else{sh.textContent='';sh.className='hint'}
+}
+['cust','item','qty','amt'].forEach(function(i){$(i).addEventListener('input',sync)});
+var tt;function toast(m){var t=$('toast');t.textContent=m;t.classList.add('on');clearTimeout(tt);tt=setTimeout(function(){t.classList.remove('on')},2200)}
+$('save').addEventListener('click',function(){toast('Saved · సేవ్ చేయబడింది')});
+$('cancel').addEventListener('click',function(){toast('Entry discarded')});
+$('again').addEventListener('click',function(){toast('Listening… · వింటున్నాను…')});
+sync();
+</script>
+
+</body></html>
